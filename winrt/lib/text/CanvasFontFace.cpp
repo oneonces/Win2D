@@ -28,84 +28,84 @@ CanvasFontFace::CanvasFontFace(DWriteFontReferenceType* fontFace)
 }
 
 class FontFileListEnumerator
-	: public RuntimeClass<RuntimeClassFlags<ClassicCom>, IDWriteFontFileEnumerator>
-	, private LifespanTracker<FontFileListEnumerator>
+    : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IDWriteFontFileEnumerator>
+    , private LifespanTracker<FontFileListEnumerator>
 {
-	std::vector<ComPtr<IDWriteFontFile>> m_files;
-	int m_index;
+    std::vector<ComPtr<IDWriteFontFile>> m_files;
+    int m_index;
 
 public:
-	FontFileListEnumerator(ComPtr<IDWriteFontFace2> const& fontFace)
-		: m_index(-1)
-	{
-		uint32_t numberOfFiles;
-		ThrowIfFailed(fontFace->GetFiles(&numberOfFiles, nullptr));
+    FontFileListEnumerator(ComPtr<IDWriteFontFace2> const& fontFace)
+        : m_index(-1)
+    {
+        uint32_t numberOfFiles;
+        ThrowIfFailed(fontFace->GetFiles(&numberOfFiles, nullptr));
 
-		std::vector<IDWriteFontFile*> rawPointers;
-		rawPointers.resize(numberOfFiles);
-		ThrowIfFailed(fontFace->GetFiles(&numberOfFiles, rawPointers.data()));
+        std::vector<IDWriteFontFile*> rawPointers;
+        rawPointers.resize(numberOfFiles);
+        ThrowIfFailed(fontFace->GetFiles(&numberOfFiles, rawPointers.data()));
 
-		m_files.resize(numberOfFiles);
-		for (uint32_t i = 0; i < numberOfFiles; ++i)
-		{
-			m_files[i] = rawPointers[i];
-		}
-	}
+        m_files.resize(numberOfFiles);
+        for (uint32_t i = 0; i < numberOfFiles; ++i)
+        {
+            m_files[i] = rawPointers[i];
+        }
+    }
 
-	IFACEMETHODIMP MoveNext(BOOL* hasCurrentFile) override
-	{
-		m_index++;		
-		*hasCurrentFile = m_index < static_cast<int>(m_files.size());
+    IFACEMETHODIMP MoveNext(BOOL* hasCurrentFile) override
+    {
+        m_index++;        
+        *hasCurrentFile = m_index < static_cast<int>(m_files.size());
 
-		return S_OK;
-	}
+        return S_OK;
+    }
 
-	IFACEMETHODIMP GetCurrentFontFile(IDWriteFontFile** fontFile) override
-	{
-		return m_files[m_index].CopyTo(fontFile);
-	}
+    IFACEMETHODIMP GetCurrentFontFile(IDWriteFontFile** fontFile) override
+    {
+        return m_files[m_index].CopyTo(fontFile);
+    }
 };
 
 class FontFaceCollectionLoader
-	: public RuntimeClass<RuntimeClassFlags<ClassicCom>, IDWriteFontCollectionLoader>
-	, private LifespanTracker<FontFaceCollectionLoader>
+    : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IDWriteFontCollectionLoader>
+    , private LifespanTracker<FontFaceCollectionLoader>
 {
-	ComPtr<IDWriteFactory> m_factory;
+    ComPtr<IDWriteFactory> m_factory;
 
 public:
-	FontFaceCollectionLoader(ComPtr<IDWriteFactory> const& factory)
-		: m_factory(factory)
-	{
-		ThrowIfFailed(m_factory->RegisterFontCollectionLoader(this));
-	}
+    FontFaceCollectionLoader(ComPtr<IDWriteFactory> const& factory)
+        : m_factory(factory)
+    {
+        ThrowIfFailed(m_factory->RegisterFontCollectionLoader(this));
+    }
 
-	~FontFaceCollectionLoader()
-	{
-		ThrowIfFailed(m_factory->UnregisterFontCollectionLoader(this));
-	}
+    ~FontFaceCollectionLoader()
+    {
+        ThrowIfFailed(m_factory->UnregisterFontCollectionLoader(this));
+    }
 
-	IFACEMETHODIMP CreateEnumeratorFromKey(
-		IDWriteFactory*,
-		void const* collectionKey,
-		uint32_t collectionKeySize,
-		IDWriteFontFileEnumerator** fontFileEnumerator) override
-	{
-		return ExceptionBoundary(
-			[=]
-			{
-				if (collectionKey == nullptr || collectionKeySize < sizeof(IDWriteFontFileEnumerator))
-					ThrowHR(E_INVALIDARG);
+    IFACEMETHODIMP CreateEnumeratorFromKey(
+        IDWriteFactory*,
+        void const* collectionKey,
+        uint32_t collectionKeySize,
+        IDWriteFontFileEnumerator** fontFileEnumerator) override
+    {
+        return ExceptionBoundary(
+            [=]
+            {
+                if (collectionKey == nullptr || collectionKeySize < sizeof(IDWriteFontFileEnumerator))
+                    ThrowHR(E_INVALIDARG);
 
-				ComPtr<IDWriteFontFileEnumerator> enumerator = *reinterpret_cast<IDWriteFontFileEnumerator* const*>(collectionKey);
-				ThrowIfFailed(enumerator.CopyTo(fontFileEnumerator));
-			});
-	}
+                ComPtr<IDWriteFontFileEnumerator> enumerator = *reinterpret_cast<IDWriteFontFileEnumerator* const*>(collectionKey);
+                ThrowIfFailed(enumerator.CopyTo(fontFileEnumerator));
+            });
+    }
 };
 
 
 ComPtr<DWriteFontReferenceType> GetContainer(IDWriteFontFace2* fontFaceInstance)
 {
-	auto factory = CustomFontManager::GetInstance()->GetSharedFactory();
+    auto factory = CustomFontManager::GetInstance()->GetSharedFactory();
 
     auto fontFileListEnumerator = Make<FontFileListEnumerator>(fontFaceInstance);
     auto* enumeratorAddress = static_cast<IDWriteFontFileEnumerator*>(fontFileListEnumerator.Get());
@@ -133,7 +133,7 @@ ComPtr<DWriteFontReferenceType> GetContainer(IDWriteFontFace2* fontFaceInstance)
     auto container = As<IDWriteFont2>(font);
 #endif
 
-	return container;
+    return container;
 }
 
 
@@ -675,55 +675,55 @@ IFACEMETHODIMP CanvasFontFace::GetGlyphMetrics(
 {
     return ExceptionBoundary(
         [&]
-    {
-        CheckInPointer(inputElements);
-        CheckInPointer(outputCount);
-        CheckAndClearOutPointer(outputElements);
-
-        std::vector<unsigned short> glyphIndices;
-        glyphIndices.reserve(inputCount);
-        for (uint32_t i = 0; i < inputCount; ++i)
         {
-            if (inputElements[i] < 0 || inputElements[i] > USHORT_MAX)
-                ThrowHR(E_INVALIDARG);
+            CheckInPointer(inputElements);
+            CheckInPointer(outputCount);
+            CheckAndClearOutPointer(outputElements);
 
-            glyphIndices.push_back(static_cast<unsigned short>(inputElements[i]));
-        }
+            std::vector<unsigned short> glyphIndices;
+            glyphIndices.reserve(inputCount);
+            for (uint32_t i = 0; i < inputCount; ++i)
+            {
+                if (inputElements[i] < 0 || inputElements[i] > USHORT_MAX)
+                    ThrowHR(E_INVALIDARG);
 
-        std::vector<DWRITE_GLYPH_METRICS> glyphMetrics(inputCount);
-        ThrowIfFailed(GetRealizedFontFace()->GetDesignGlyphMetrics(glyphIndices.data(), inputCount, glyphMetrics.data(), isSideways));
+                glyphIndices.push_back(static_cast<unsigned short>(inputElements[i]));
+            }
 
-        ComArray<CanvasGlyphMetrics> output(inputCount);
+            std::vector<DWRITE_GLYPH_METRICS> glyphMetrics(inputCount);
+            ThrowIfFailed(GetRealizedFontFace()->GetDesignGlyphMetrics(glyphIndices.data(), inputCount, glyphMetrics.data(), isSideways));
 
-        DWRITE_FONT_METRICS1 metrics;
-        GetRealizedFontFace()->GetMetrics(&metrics);
+            ComArray<CanvasGlyphMetrics> output(inputCount);
 
-        for (uint32_t i = 0; i < inputCount; ++i)
-        {
-            auto leftDesignSpace = glyphMetrics[i].leftSideBearing;
-            auto topDesignSpace = metrics.lineGap + metrics.ascent - glyphMetrics[i].verticalOriginY + glyphMetrics[i].topSideBearing;
-            auto widthDesignSpace = glyphMetrics[i].advanceWidth - glyphMetrics[i].leftSideBearing - glyphMetrics[i].rightSideBearing;
-            auto heightDesignSpace = glyphMetrics[i].advanceHeight - glyphMetrics[i].topSideBearing - glyphMetrics[i].bottomSideBearing;
+            DWRITE_FONT_METRICS1 metrics;
+            GetRealizedFontFace()->GetMetrics(&metrics);
 
-            auto left = DesignSpaceToEmSpace(leftDesignSpace, metrics.designUnitsPerEm);
-            auto top = DesignSpaceToEmSpace(topDesignSpace, metrics.designUnitsPerEm);
-            auto width = DesignSpaceToEmSpace(widthDesignSpace, metrics.designUnitsPerEm);
-            auto height = DesignSpaceToEmSpace(heightDesignSpace, metrics.designUnitsPerEm);
+            for (uint32_t i = 0; i < inputCount; ++i)
+            {
+                auto leftDesignSpace = glyphMetrics[i].leftSideBearing;
+                auto topDesignSpace = metrics.lineGap + metrics.ascent - glyphMetrics[i].verticalOriginY + glyphMetrics[i].topSideBearing;
+                auto widthDesignSpace = glyphMetrics[i].advanceWidth - glyphMetrics[i].leftSideBearing - glyphMetrics[i].rightSideBearing;
+                auto heightDesignSpace = glyphMetrics[i].advanceHeight - glyphMetrics[i].topSideBearing - glyphMetrics[i].bottomSideBearing;
 
-            output[i] = CanvasGlyphMetrics{
-                DesignSpaceToEmSpace(glyphMetrics[i].leftSideBearing, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].advanceWidth, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].rightSideBearing, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].topSideBearing, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].advanceHeight, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].bottomSideBearing, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].verticalOriginY, metrics.designUnitsPerEm),
-                Rect{ left, top, width, height }
-            };
-        }
+                auto left = DesignSpaceToEmSpace(leftDesignSpace, metrics.designUnitsPerEm);
+                auto top = DesignSpaceToEmSpace(topDesignSpace, metrics.designUnitsPerEm);
+                auto width = DesignSpaceToEmSpace(widthDesignSpace, metrics.designUnitsPerEm);
+                auto height = DesignSpaceToEmSpace(heightDesignSpace, metrics.designUnitsPerEm);
 
-        output.Detach(outputCount, outputElements);
-    });
+                output[i] = CanvasGlyphMetrics{
+                    DesignSpaceToEmSpace(glyphMetrics[i].leftSideBearing, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].advanceWidth, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].rightSideBearing, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].topSideBearing, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].advanceHeight, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].bottomSideBearing, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].verticalOriginY, metrics.designUnitsPerEm),
+                    Rect{ left, top, width, height }
+                };
+            }
+
+            output.Detach(outputCount, outputElements);
+        });
 }
 
 IFACEMETHODIMP CanvasFontFace::GetGdiCompatibleGlyphMetrics(
@@ -739,55 +739,55 @@ IFACEMETHODIMP CanvasFontFace::GetGdiCompatibleGlyphMetrics(
 {
     return ExceptionBoundary(
         [&]
-    {
-        CheckInPointer(inputElements);
-        CheckInPointer(outputCount);
-        CheckAndClearOutPointer(outputElements);
-
-        std::vector<unsigned short> glyphIndices;
-        glyphIndices.reserve(inputCount);
-        for (uint32_t i = 0; i < inputCount; ++i)
         {
-            if (inputElements[i] < 0 || inputElements[i] > USHORT_MAX)
-                ThrowHR(E_INVALIDARG);
+            CheckInPointer(inputElements);
+            CheckInPointer(outputCount);
+            CheckAndClearOutPointer(outputElements);
 
-            glyphIndices.push_back(static_cast<unsigned short>(inputElements[i]));
-        }
+            std::vector<unsigned short> glyphIndices;
+            glyphIndices.reserve(inputCount);
+            for (uint32_t i = 0; i < inputCount; ++i)
+            {
+                if (inputElements[i] < 0 || inputElements[i] > USHORT_MAX)
+                    ThrowHR(E_INVALIDARG);
 
-        std::vector<DWRITE_GLYPH_METRICS> glyphMetrics(inputCount);
-        ThrowIfFailed(GetRealizedFontFace()->GetGdiCompatibleGlyphMetrics(fontSize, DpiToPixelsPerDip(dpi), ReinterpretAs<DWRITE_MATRIX*>(&transform), useGdiNatural, glyphIndices.data(), inputCount, glyphMetrics.data(), isSideways));
+                glyphIndices.push_back(static_cast<unsigned short>(inputElements[i]));
+            }
 
-        ComArray<CanvasGlyphMetrics> output(inputCount);
+            std::vector<DWRITE_GLYPH_METRICS> glyphMetrics(inputCount);
+            ThrowIfFailed(GetRealizedFontFace()->GetGdiCompatibleGlyphMetrics(fontSize, DpiToPixelsPerDip(dpi), ReinterpretAs<DWRITE_MATRIX*>(&transform), useGdiNatural, glyphIndices.data(), inputCount, glyphMetrics.data(), isSideways));
 
-        DWRITE_FONT_METRICS1 metrics;
-        GetRealizedFontFace()->GetMetrics(&metrics);
+            ComArray<CanvasGlyphMetrics> output(inputCount);
 
-        for (uint32_t i = 0; i < inputCount; ++i)
-        {
-            auto leftDesignSpace = glyphMetrics[i].leftSideBearing;
-            auto topDesignSpace = metrics.lineGap + metrics.ascent - glyphMetrics[i].verticalOriginY + glyphMetrics[i].topSideBearing;
-            auto widthDesignSpace = glyphMetrics[i].advanceWidth - glyphMetrics[i].leftSideBearing - glyphMetrics[i].rightSideBearing;
-            auto heightDesignSpace = glyphMetrics[i].advanceHeight - glyphMetrics[i].topSideBearing - glyphMetrics[i].bottomSideBearing;
+            DWRITE_FONT_METRICS1 metrics;
+            GetRealizedFontFace()->GetMetrics(&metrics);
 
-            auto left = DesignSpaceToEmSpace(leftDesignSpace, metrics.designUnitsPerEm);
-            auto top = DesignSpaceToEmSpace(topDesignSpace, metrics.designUnitsPerEm);
-            auto width = DesignSpaceToEmSpace(widthDesignSpace, metrics.designUnitsPerEm);
-            auto height = DesignSpaceToEmSpace(heightDesignSpace, metrics.designUnitsPerEm);
+            for (uint32_t i = 0; i < inputCount; ++i)
+            {
+                auto leftDesignSpace = glyphMetrics[i].leftSideBearing;
+                auto topDesignSpace = metrics.lineGap + metrics.ascent - glyphMetrics[i].verticalOriginY + glyphMetrics[i].topSideBearing;
+                auto widthDesignSpace = glyphMetrics[i].advanceWidth - glyphMetrics[i].leftSideBearing - glyphMetrics[i].rightSideBearing;
+                auto heightDesignSpace = glyphMetrics[i].advanceHeight - glyphMetrics[i].topSideBearing - glyphMetrics[i].bottomSideBearing;
 
-            output[i] = CanvasGlyphMetrics{
-                DesignSpaceToEmSpace(glyphMetrics[i].leftSideBearing, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].advanceWidth, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].rightSideBearing, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].topSideBearing, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].advanceHeight, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].bottomSideBearing, metrics.designUnitsPerEm),
-                DesignSpaceToEmSpace(glyphMetrics[i].verticalOriginY, metrics.designUnitsPerEm),
-                Rect{ left, top, width, height }
-            };
-        }
+                auto left = DesignSpaceToEmSpace(leftDesignSpace, metrics.designUnitsPerEm);
+                auto top = DesignSpaceToEmSpace(topDesignSpace, metrics.designUnitsPerEm);
+                auto width = DesignSpaceToEmSpace(widthDesignSpace, metrics.designUnitsPerEm);
+                auto height = DesignSpaceToEmSpace(heightDesignSpace, metrics.designUnitsPerEm);
 
-        output.Detach(outputCount, outputElements);
-    });
+                output[i] = CanvasGlyphMetrics{
+                    DesignSpaceToEmSpace(glyphMetrics[i].leftSideBearing, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].advanceWidth, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].rightSideBearing, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].topSideBearing, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].advanceHeight, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].bottomSideBearing, metrics.designUnitsPerEm),
+                    DesignSpaceToEmSpace(glyphMetrics[i].verticalOriginY, metrics.designUnitsPerEm),
+                    Rect{ left, top, width, height }
+                };
+            }
+
+            output.Detach(outputCount, outputElements);
+        });
 }
 
 IFACEMETHODIMP CanvasFontFace::get_Weight(FontWeight* value)
@@ -871,7 +871,7 @@ IFACEMETHODIMP CanvasFontFace::GetInformationalStrings(
         });
 }
 
-IFACEMETHODIMP CanvasFontFace::HasCharacter(UINT32 unicodeValue, boolean* value)
+IFACEMETHODIMP CanvasFontFace::HasCharacter(uint32_t unicodeValue, boolean* value)
 {
     return ExceptionBoundary(
         [&]
@@ -970,6 +970,135 @@ IFACEMETHODIMP CanvasFontFace::get_Panose(uint32_t* valueCount, uint8_t** values
             }
 
             out.Detach(valueCount, values);
+        });
+}
+
+
+IFACEMETHODIMP CanvasFontFace::GetSupportedTypographicFeatureNames(
+    CanvasAnalyzedScript script,
+    uint32_t* valueCount,
+    CanvasTypographyFeatureName** valueElements)
+{
+    return GetSupportedTypographicFeatureNamesWithLocale(script, nullptr, valueCount, valueElements);
+}
+
+IFACEMETHODIMP CanvasFontFace::GetSupportedTypographicFeatureNamesWithLocale(
+    CanvasAnalyzedScript script,
+    HSTRING locale,
+    uint32_t* valueCount,
+    CanvasTypographyFeatureName** valueElements)
+{
+    return ExceptionBoundary(
+        [&]
+        {
+            CheckInPointer(valueCount);
+            CheckAndClearOutPointer(valueElements);
+
+            auto textAnalyzer = CustomFontManager::GetInstance()->GetTextAnalyzer();
+
+            auto dwriteScriptAnalysis = ToDWriteScriptAnalysis(script);
+
+            auto& dwriteFontFace = GetRealizedFontFace();
+
+            WinString localeString(locale);
+
+            uint32_t actualTagCount;
+
+            HRESULT hr = textAnalyzer->GetTypographicFeatures(
+                dwriteFontFace.Get(),
+                dwriteScriptAnalysis,
+                static_cast<wchar_t const*>(localeString),
+                0,
+                &actualTagCount,
+                nullptr);
+            if (hr == E_NOT_SUFFICIENT_BUFFER)
+            {
+                std::vector<DWRITE_FONT_FEATURE_TAG> dwriteFontFeatureTags;
+                dwriteFontFeatureTags.resize(actualTagCount);
+
+                ThrowIfFailed(textAnalyzer->GetTypographicFeatures(
+                    dwriteFontFace.Get(),
+                    dwriteScriptAnalysis,
+                    static_cast<wchar_t const*>(localeString),
+                    static_cast<uint32_t>(dwriteFontFeatureTags.size()),
+                    &actualTagCount,
+                    dwriteFontFeatureTags.data()));
+
+                auto result = TransformToComArray<CanvasTypographyFeatureName>(dwriteFontFeatureTags.begin(), dwriteFontFeatureTags.end(),
+                    [](DWRITE_FONT_FEATURE_TAG value)
+                    {
+                        return ToCanvasTypographyFeatureName(value);
+                    });
+
+                result.Detach(valueCount, valueElements);
+            }
+            else
+            {
+                //
+                // Supported feature list of size zero.
+                // 
+                ThrowIfFailed(hr);
+
+                ComArray<CanvasTypographyFeatureName> result(0);
+
+                result.Detach(valueCount, valueElements);
+            }
+        });
+
+}
+
+IFACEMETHODIMP CanvasFontFace::GetTypographicFeatureGlyphSupport(
+    CanvasAnalyzedScript script,
+    CanvasTypographyFeatureName typographicFeatureName,
+    uint32_t glyphsCount,
+    CanvasGlyph* glyphsElements,
+    uint32_t* valueCount,
+    boolean** valueElements)
+{
+    return GetTypographicFeatureGlyphSupportWithLocale(script, typographicFeatureName, glyphsCount, glyphsElements, nullptr, valueCount, valueElements);
+}
+
+IFACEMETHODIMP CanvasFontFace::GetTypographicFeatureGlyphSupportWithLocale(
+    CanvasAnalyzedScript script,
+    CanvasTypographyFeatureName typographicFeatureName,
+    uint32_t glyphsCount,
+    CanvasGlyph* glyphsElements,
+    HSTRING locale,
+    uint32_t* valueCount,
+    boolean** valueElements)
+{
+    return ExceptionBoundary(
+        [&]
+        {
+            auto textAnalyzer = CustomFontManager::GetInstance()->GetTextAnalyzer();
+
+            WinString localeString(locale);
+
+            auto dwriteGlyphData = GetDWriteGlyphData(glyphsCount, glyphsElements, static_cast<int>(DWriteGlyphField::Indices));
+
+            std::vector<uint8_t> featureApplies;
+            featureApplies.resize(glyphsCount);
+
+            auto fontFeatureTag = ToDWriteFontFeatureTag(typographicFeatureName);
+
+            auto& dwriteFontFace = GetRealizedFontFace();
+
+            ThrowIfFailed(textAnalyzer->CheckTypographicFeature(
+                dwriteFontFace.Get(),
+                ToDWriteScriptAnalysis(script),
+                static_cast<wchar_t const*>(localeString),
+                fontFeatureTag,
+                glyphsCount,
+                dwriteGlyphData.Indices.data(),
+                featureApplies.data()));
+            
+            auto result = TransformToComArray<boolean>(featureApplies.begin(), featureApplies.end(),
+                [](uint8_t value)
+                {
+                    return !!value;
+                });
+
+            result.Detach(valueCount, valueElements);
         });
 }
 

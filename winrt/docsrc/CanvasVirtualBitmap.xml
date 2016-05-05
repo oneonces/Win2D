@@ -10,7 +10,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <name>Microsoft.Graphics.Canvas</name>
   </assembly>
   <members>
-    <member name="T:Microsoft.Graphics.Canvas.CanvasVirtualBitmap" Win10="true" Experimental="true">
+    <member name="T:Microsoft.Graphics.Canvas.CanvasVirtualBitmap" Win10="true">
       <summary>Loads a bitmap that may be larger than the maximum size of a CanvasBitmap.</summary>
       <remarks>
         <p>
@@ -55,10 +55,13 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
         </p>
       </remarks>
     </member>
+    <member name="P:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Device">
+      <summary>The device associated with this CanvasVirtualBitmap.</summary>
+    </member>
     <member name="M:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Dispose">
       <summary>Releases all resources used by the CanvasVirtualBitmap.</summary>
     </member>
-    <member name="M:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.GetBounds(Microsoft.Graphics.Canvas.CanvasDrawingSession)">
+    <member name="M:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.GetBounds(Microsoft.Graphics.Canvas.ICanvasResourceCreator)">
       <summary>Retrieves the bounds of this CanvasVirtualBitmap.</summary>
       <remarks>
         <inheritdoc/>
@@ -66,14 +69,13 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
           <b>Note:</b> CanvasVirtualBitmap also has the <see
           cref="P:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Bounds"/> and <see
           cref="P:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Size"/> properties that
-          can be used to directly query the bounds or size without the need for
-          a CanvasDrawingSession.
+          can be used to directly query the bounds or size.
         </p>
       </remarks>
       <seealso cref="P:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Bounds"/>
       <seealso cref="P:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Size"/>
     </member>
-    <member name="M:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.GetBounds(Microsoft.Graphics.Canvas.CanvasDrawingSession,System.Numerics.Matrix3x2)">
+    <member name="M:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.GetBounds(Microsoft.Graphics.Canvas.ICanvasResourceCreator,System.Numerics.Matrix3x2)">
       <summary>Retrieves the bounds of this CanvasVirtualBitmap.</summary>
       <remarks>
         <inheritdoc/>
@@ -81,8 +83,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
           <b>Note:</b> CanvasVirtualBitmap also has the <see
           cref="P:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Bounds"/> and <see
           cref="P:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Size"/> properties that
-          can be used to directly query the bounds or size without the need for
-          a CanvasDrawingSession.
+          can be used to directly query the bounds or size.
         </p>
       </remarks>
       <seealso cref="P:Microsoft.Graphics.Canvas.CanvasVirtualBitmap.Bounds"/>
@@ -205,7 +206,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       <summary>Gets the size of the bitmap, in pixels.</summary>
       <remarks>For more information, see <a href="DPI.htm">DPI and DIPs</a>.</remarks>
     </member>
-    <member name="T:Microsoft.Graphics.Canvas.CanvasVirtualBitmapOptions" Win10="true" Experimental="true">
+    <member name="T:Microsoft.Graphics.Canvas.CanvasVirtualBitmapOptions" Win10="true">
       <summary>Options passed to CanvasVirtualBitmap.LoadAsync.</summary>
     </member>
     <member name="F:Microsoft.Graphics.Canvas.CanvasVirtualBitmapOptions.None">

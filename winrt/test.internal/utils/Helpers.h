@@ -1272,24 +1272,24 @@ namespace Microsoft
                 ENUM_VALUE(DWRITE_INFORMATIONAL_STRING_POSTSCRIPT_NAME);
                 ENUM_VALUE(DWRITE_INFORMATIONAL_STRING_POSTSCRIPT_CID_NAME);
                 END_ENUM(DWRITE_INFORMATIONAL_STRING_ID);
-			}
+            }
 
-			ENUM_TO_STRING(CanvasTextMeasuringMode)
-			{
-				ENUM_VALUE(CanvasTextMeasuringMode::Natural);
-				ENUM_VALUE(CanvasTextMeasuringMode::GdiNatural);
-				ENUM_VALUE(CanvasTextMeasuringMode::GdiClassic);
-				END_ENUM(CanvasTextMeasuringMode);
-			}
+            ENUM_TO_STRING(CanvasTextMeasuringMode)
+            {
+                ENUM_VALUE(CanvasTextMeasuringMode::Natural);
+                ENUM_VALUE(CanvasTextMeasuringMode::GdiNatural);
+                ENUM_VALUE(CanvasTextMeasuringMode::GdiClassic);
+                END_ENUM(CanvasTextMeasuringMode);
+            }
 
-			ENUM_TO_STRING(CanvasGlyphOrientation)
-			{
-				ENUM_VALUE(CanvasGlyphOrientation::Upright);
-				ENUM_VALUE(CanvasGlyphOrientation::Clockwise90Degrees);
-				ENUM_VALUE(CanvasGlyphOrientation::Clockwise180Degrees);
-				ENUM_VALUE(CanvasGlyphOrientation::Clockwise270Degrees);
-				END_ENUM(CanvasGlyphOrientation);
-			}
+            ENUM_TO_STRING(CanvasGlyphOrientation)
+            {
+                ENUM_VALUE(CanvasGlyphOrientation::Upright);
+                ENUM_VALUE(CanvasGlyphOrientation::Clockwise90Degrees);
+                ENUM_VALUE(CanvasGlyphOrientation::Clockwise180Degrees);
+                ENUM_VALUE(CanvasGlyphOrientation::Clockwise270Degrees);
+                END_ENUM(CanvasGlyphOrientation);
+            }
 
             ENUM_TO_STRING(EffectBorderMode)
             {
@@ -1490,6 +1490,42 @@ namespace Microsoft
                 ENUM_VALUE(DWRITE_SCRIPT_SHAPES_DEFAULT);
                 ENUM_VALUE(DWRITE_SCRIPT_SHAPES_NO_VISUAL);
                 END_ENUM(DWRITE_SCRIPT_SHAPES);
+            }
+
+            ENUM_TO_STRING(DWRITE_GLYPH_ORIENTATION_ANGLE)
+            {
+                ENUM_VALUE(DWRITE_GLYPH_ORIENTATION_ANGLE_0_DEGREES);
+                ENUM_VALUE(DWRITE_GLYPH_ORIENTATION_ANGLE_90_DEGREES);
+                ENUM_VALUE(DWRITE_GLYPH_ORIENTATION_ANGLE_180_DEGREES);
+                ENUM_VALUE(DWRITE_GLYPH_ORIENTATION_ANGLE_270_DEGREES);
+                END_ENUM(DWRITE_GLYPH_ORIENTATION_ANGLE);
+            }
+
+            ENUM_TO_STRING(CanvasLineBreakCondition)
+            {
+                ENUM_VALUE(CanvasLineBreakCondition::Neutral);
+                ENUM_VALUE(CanvasLineBreakCondition::CanBreak);
+                ENUM_VALUE(CanvasLineBreakCondition::CannotBreak);
+                ENUM_VALUE(CanvasLineBreakCondition::MustBreak);
+                END_ENUM(CanvasLineBreakCondition);
+            }
+
+            ENUM_TO_STRING(CanvasGlyphJustification)
+            {
+                ENUM_VALUE(CanvasGlyphJustification::None);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicBlank);
+                ENUM_VALUE(CanvasGlyphJustification::Character);
+                ENUM_VALUE(CanvasGlyphJustification::Blank);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicNormal);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicKashida);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicAlef);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicHa);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicRa);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicBa);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicBara);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicSeen);
+                ENUM_VALUE(CanvasGlyphJustification::ArabicSeenM);
+                END_ENUM(CanvasGlyphJustification);
             }
 
             template<typename T>

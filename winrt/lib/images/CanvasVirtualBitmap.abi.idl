@@ -99,6 +99,9 @@ namespace Microsoft.Graphics.Canvas
     interface ICanvasVirtualBitmap : IInspectable
         requires Windows.Foundation.IClosable, ICanvasImage
     {
+        [propget]
+        HRESULT Device([out, retval] CanvasDevice** value);
+
         //
         // Returns whether or not the underlying D2D image was actually created
         // with CACHE_ON_DEMAND set.
@@ -137,8 +140,7 @@ namespace Microsoft.Graphics.Canvas
         //
     };
 
-    [version(VERSION), threading(both), marshaling_behavior(agile),
-     static(ICanvasVirtualBitmapStatics, VERSION)]
+    [STANDARD_ATTRIBUTES, static(ICanvasVirtualBitmapStatics, VERSION)]
     runtimeclass CanvasVirtualBitmap
     {
         [default] interface ICanvasVirtualBitmap;

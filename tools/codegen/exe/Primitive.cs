@@ -2,11 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace CodeGen
@@ -38,7 +34,7 @@ namespace CodeGen
             typeDictionary[m_name] = this;
 
             m_projectedName = m_name;
-            if(overrides != null && overrides.ProjectedNameOverride != null)
+            if (overrides != null && overrides.ProjectedNameOverride != null)
             {
                 m_projectedName = overrides.ProjectedNameOverride;
             }

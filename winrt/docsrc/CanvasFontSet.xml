@@ -10,7 +10,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <name>Microsoft.Graphics.Canvas</name>
   </assembly>
   <members>
-    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasFontProperty" Experimental="true">
+    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasFontProperty">
       <summary>Describes a localized string attribute of a font.</summary>
     </member>
     <member name="F:Microsoft.Graphics.Canvas.Text.CanvasFontProperty.Identifier">
@@ -23,7 +23,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       <summary>Specifies the locale of a property value.</summary>
       <remarks>A font may have the same value represented multiple times for different locales.</remarks>
     </member>
-    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasFontPropertyIdentifier"  Experimental="true">
+    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasFontPropertyIdentifier">
       <summary>Indentifies a property of the font.</summary>
       <remarks>
       	In a font set's assortment of properties, a PreferredFamilyName property is 
@@ -75,7 +75,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <member name="F:Microsoft.Graphics.Canvas.Text.CanvasFontPropertyIdentifier.Total">
       <summary>The total number of properties.</summary>
     </member>
-    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasFontSet" Experimental="true">
+    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasFontSet">
       <summary>Represents a grouping of fonts.</summary>
       <remarks>
         <p>
@@ -85,10 +85,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
         </p>
       </remarks>
     </member>
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasFontSet.#ctor">
-      <summary>Initializes a new instance of the CanvasFontSet class.</summary>
-    </member>
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasFontSet.TryFindFontFace(Microsoft.Graphics.Canvas.Text.CanvasFontFace,System.Int32@)">
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasFontSet.TryFindFontFace(Microsoft.Graphics.Canvas.Text.CanvasFontFace,System.Int32@)" Win10="true">
       <summary>Gets the index of the matching font face in the font set, with the same file, face index, and simulations.</summary>
     </member>
     <member name="M:Microsoft.Graphics.Canvas.Text.CanvasFontSet.Dispose">
@@ -129,6 +126,48 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <member name="M:Microsoft.Graphics.Canvas.Text.CanvasFontSet.GetPropertyValues(Microsoft.Graphics.Canvas.Text.CanvasFontPropertyIdentifier)" Win10="true">
       <summary>Returns all unique property values in the set, which can be used for purposes such as displaying a family list or tag cloud.</summary>
       <remarks>All values are returned regardless of language, including all localized names.</remarks>
+    </member>
+    
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasFontSet.#ctor(System.Uri)">
+      <summary>Initializes a new instance of the CanvasFontSet class from an application URI.</summary>
+      <remarks>
+        <p>
+          The passed-in URI must be a valid application URI, which begins with
+          either <tt>ms-appx://</tt> or <tt>ms-appdata://</tt>.
+          This allows apps to specify a font file- for example, a TTF file, that's 
+          distributed with the application.
+        </p>
+        <p>
+          The resulting CanvasFontSet contains font faces from the specified URI, and
+          no other fonts.
+        </p>
+        <p>
+          Often, a single font file contains not just one font face, but several. For
+          example, the built-in system font Gabriola contains the font faces "Regular",
+          "Oblique", and "Bold", all within the file "Gabriola.ttf". For this reason
+          a URI is used to produce a CanvasFontSet, rather than a single 
+          CanvasFontFace.
+        </p>
+        <p>
+          Constructing a font set is a way of verifying that a font file is valid and
+          supported by Win2D. 
+        </p>
+        <p>
+          For example:
+        </p>
+        <code>
+            var fontSet = new CanvasFontSet(new Uri("ms-appx:///imageTiger.jpg"));
+            if (fontSet.Fonts.Count == 0)
+            {
+                // No fonts could be loaded from the set.
+                // ...
+            }
+        </code>
+        <p>
+          Constructing a font set from a URI which isn't a supported font file
+          will yield an empty font set.
+        </p>
+      </remarks>
     </member>
     
   </members>

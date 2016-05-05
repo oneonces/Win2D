@@ -594,7 +594,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       <summary>Gets the device associated with this text layout.</summary>
     </member>    
 
-    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.LineSpacingMode" Experimental="true" Win10="true">
+    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.LineSpacingMode" Win10="true">
       <summary>Specifies how lines are spaced apart.</summary>
       <remarks>
         <p>
@@ -630,7 +630,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       </remarks>
     </member>
     
-    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.TrimmingSign" Experimental="true">
+    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.TrimmingSign">
       <summary>Specifies the type of trimming sign used, when text is drawn outside a text layout's requested size extents.</summary>
       <remarks>
         <p>
@@ -644,14 +644,14 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       </remarks>
     </member>    
 
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.DrawToTextRenderer(Microsoft.Graphics.Canvas.Text.ICanvasTextRenderer,System.Numerics.Vector2)" Experimental="true">
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.DrawToTextRenderer(Microsoft.Graphics.Canvas.Text.ICanvasTextRenderer,System.Numerics.Vector2)">
       <summary>Draws this text layout to an application-defined text renderer.</summary>
       <remarks>
         <see cref="T:Microsoft.Graphics.Canvas.Text.ICanvasTextRenderer"/>
         is an interface that applications implement.
       </remarks>
     </member>
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.DrawToTextRenderer(Microsoft.Graphics.Canvas.Text.ICanvasTextRenderer,System.Single,System.Single)" Experimental="true">
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.DrawToTextRenderer(Microsoft.Graphics.Canvas.Text.ICanvasTextRenderer,System.Single,System.Single)">
       <summary>Draws this text layout to an application-defined text renderer.</summary>
       <remarks>
         <see cref="T:Microsoft.Graphics.Canvas.Text.ICanvasTextRenderer"/>
@@ -659,7 +659,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       </remarks>
     </member>    
 
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.SetInlineObject(System.Int32,System.Int32,Microsoft.Graphics.Canvas.Text.ICanvasTextInlineObject)" Experimental="true">
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.SetInlineObject(System.Int32,System.Int32,Microsoft.Graphics.Canvas.Text.ICanvasTextInlineObject)">
       <summary>Sets the inline object for a specified group of characters.</summary>
       <remarks>
         It's valid to use the same inline object for multiple character positions.
@@ -668,7 +668,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.GetInlineObject(System.Int32)">
       <summary>Gets the inline object for the character at the position specified.</summary>
     </member>
-    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.CustomTrimmingSign" Experimental="true">
+    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.CustomTrimmingSign">
       <summary>Gets or sets a custom trimming sign.</summary>
       <remarks>
         <p>
@@ -684,7 +684,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     </member>
     
 
-    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasLineMetrics" Experimental="true">
+    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasLineMetrics">
       <summary>Describes a line of formatted text within a text layout.</summary>
     </member>
     <member name="F:Microsoft.Graphics.Canvas.Text.CanvasLineMetrics.CharacterCount">
@@ -777,14 +777,14 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
           </p>
       </remarks>
     </member>
-    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.LineMetrics" Experimental="true">
+    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.LineMetrics">
       <summary>Gets an array of metrics describing each line.</summary>
       <remarks>
         As a convention, a text layout for a zero-length piece of text will still contain one line.
       </remarks>
     </member>
 
-    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasClusterMetrics" Experimental="true">
+    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasClusterMetrics">
       <summary>Describes a glyph cluster.</summary>
       <remarks>
         <p>
@@ -816,8 +816,11 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <member name="F:Microsoft.Graphics.Canvas.Text.CanvasClusterMetrics.Properties">
       <summary>The glyph cluster's properties.</summary>
     </member>
-    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasClusterProperties" Experimental="true">
+    <member name="T:Microsoft.Graphics.Canvas.Text.CanvasClusterProperties">
       <summary>Properties which apply to a glyph cluster.</summary>
+    </member>
+    <member name="F:Microsoft.Graphics.Canvas.Text.CanvasClusterProperties.None">
+      <summary>Indicates that no attributes pertain to the cluster.</summary>
     </member>
     <member name="F:Microsoft.Graphics.Canvas.Text.CanvasClusterProperties.CanWrapLineAfter">
       <summary>Indicates that a line can be broken right after the cluster.</summary>
@@ -841,7 +844,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <member name="F:Microsoft.Graphics.Canvas.Text.CanvasClusterProperties.RightToLeft">
       <summary>Indicates that the cluster is read from right to left.</summary>
     </member>
-    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.ClusterMetrics" Experimental="true">
+    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.ClusterMetrics">
       <summary>Gets an array of metrics describing each cluster.</summary>
       <remarks>
         It's valid for a text layout to have zero clusters, in which case this 
@@ -849,7 +852,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       </remarks>
     </member>    
 
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.SetCustomBrush(System.Int32,System.Int32,System.Object)" Experimental="true">
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.SetCustomBrush(System.Int32,System.Int32,System.Object)">
       <summary>Sets the custom brush associated with a group of characters in the text layout.</summary>
       <remarks>
         <p>
@@ -875,7 +878,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
         </p>
       </remarks>
     </member>
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.GetCustomBrush(System.Int32)" Experimental="true">
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.GetCustomBrush(System.Int32)">
       <summary>Gets the custom brush associated with a character index in the text layout.</summary>
       <remarks>
         <p>
@@ -884,7 +887,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       </remarks>
     </member>    
 
-    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.LayoutBoundsIncludingTrailingWhitespace" Experimental="true">
+    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.LayoutBoundsIncludingTrailingWhitespace">
       <summary>Gets a rectangle describing the bounds of text, plus any trailing whitespace.</summary>
       <remarks>
         <p>
@@ -941,7 +944,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
         
       </remarks>
     </member>
-    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.MaximumBidiReorderingDepth" Experimental="true">
+    <member name="P:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.MaximumBidiReorderingDepth">
       <summary>Gets the maximum reordering depth for direction changes of bi-directional text.</summary>
       <remarks>
         <p>
@@ -956,7 +959,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       </remarks>
     </member>
 
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.SetTypography(System.Int32,System.Int32,Microsoft.Graphics.Canvas.Text.CanvasTypography)" Experimental="true">
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.SetTypography(System.Int32,System.Int32,Microsoft.Graphics.Canvas.Text.CanvasTypography)">
        <summary>
          Sets the typography features that affect a specified group of characters.
        </summary>
@@ -971,13 +974,35 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
         </p>
       </remarks>
     </member>
-    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.GetTypography(System.Int32)" Experimental="true">
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.GetTypography(System.Int32)">
       <summary>
         Gets the typography features that affect the character at the position specified.
       </summary>
       <remarks>
         <p>
            The default typography is always null.
+        </p>
+      </remarks>
+    </member>
+
+    <member name="M:Microsoft.Graphics.Canvas.Text.CanvasTextLayout.GetGlyphOrientationTransform(Microsoft.Graphics.Canvas.Text.CanvasGlyphOrientation,System.Boolean,System.Numerics.Vector2)">
+      <summary>Gets a transform matrix to use when drawing a glyph run.</summary>
+      <remarks>
+        <p>
+          The returned transform matrix has the correct rotation and translation
+          components for drawing text at the specified position and orientation. 
+          Custom text renderers can use this method to determine glyph
+          rotation, particularly if they wish to pass the DrawGlyphRun call along to 
+          <see cref="O:Microsoft.Graphics.Canvas.CanvasDrawingSession.DrawGlyphRun">CanvasDrawingSession.DrawGlyphRun</see>,
+          since CanvasDrawingSession.DrawGlyphRun doesn't auto-rotate glyphs.
+        </p>
+        <p>
+          Moreover, this method exists for apps which want to draw a glyph run 
+          using something other than the built-in renderer, CanvasDrawingSession.
+        </p>
+        <p>
+          Apps shouldn't use this method when constructing geometry from text; 
+          Win2D bakes that transform into the geometry.
         </p>
       </remarks>
     </member>

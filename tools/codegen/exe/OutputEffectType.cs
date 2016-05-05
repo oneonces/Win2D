@@ -5,9 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 
 namespace CodeGen
 {
@@ -57,9 +54,8 @@ namespace CodeGen
                     // Check if property represent enum that is common to some group of effects
                     if (property.Type == "enum" && property.EnumFields.IsRepresentative && property.ShouldProject)
                     {
-                        var registeredEffects = effects.Where(EffectGenerator.IsEffectEnabled);
                         // Check if any registred property need this enum
-                        if (registeredEffects.Any(e => e.Properties.Any(p => p.TypeNameIdl == property.TypeNameIdl)))
+                        if (effects.Any(e => e.Properties.Any(p => p.TypeNameIdl == property.TypeNameIdl)))
                         {
                             if (isFirstOutput)
                             {
@@ -85,11 +81,7 @@ namespace CodeGen
             output.WriteLine("#include \"pch.h\"");
             output.WriteLine();
 
-            var enabledEffects = from effect in effects
-                                 where EffectGenerator.IsEffectEnabled(effect)
-                                 select effect;
-
-            var effectsByVersion = from effect in enabledEffects
+            var effectsByVersion = from effect in effects
                                    orderby effect.ClassName
                                    group effect by (effect.Overrides != null ? effect.Overrides.WinVer : null) into versionGroup
                                    orderby versionGroup.Key
@@ -112,7 +104,7 @@ namespace CodeGen
             output.WriteLine("std::pair<IID, CanvasEffect::MakeEffectFunction> CanvasEffect::m_effectMakers[] =");
             output.WriteLine("{");
 
-            int longestName = enabledEffects.Select(effect => effect.ClassName.Length).Max();
+            int longestName = effects.Select(effect => effect.ClassName.Length).Max();
 
             foreach (var versionGroup in effectsByVersion)
             {
@@ -225,7 +217,15 @@ namespace CodeGen
             output.WriteLine("};");
             output.WriteLine();
 
-            output.WriteLine("[version(VERSION), activatable(VERSION)]");
+            string statics = "";
+            
+            if (effect.Overrides != null && effect.Overrides.HasStatics)
+            {
+                statics = ", static(" + effect.InterfaceName + "Statics, VERSION)";
+            }
+
+            output.WriteLine("[STANDARD_ATTRIBUTES, activatable(VERSION)" + statics + "]");
+
             output.WriteLine("runtimeclass " + effect.ClassName);
             output.WriteLine("{");
             output.Indent();
@@ -383,7 +383,10 @@ namespace CodeGen
 
             WritePropertyMapping(effect, output);
 
-            output.WriteLine("ActivatableClass(" + effect.ClassName + ");");
+            if (effect.Overrides == null || !effect.Overrides.HasStatics)
+            {
+                output.WriteLine("ActivatableClass(" + effect.ClassName + ");");
+            }
 
             output.Unindent();
             output.WriteLine("}}}}}");
@@ -582,6 +585,10 @@ namespace CodeGen
             {
                 value = "{ " + value + " }";
             }
+            else if (value == "null")
+            {
+                value = "static_cast<" + property.TypeNameCpp + ">(nullptr)";
+            }
 
             return value;
         }
@@ -619,7 +626,7 @@ namespace CodeGen
 
         static string FloatToString(float value)
         {
-            if(float.IsInfinity(value))
+            if (float.IsInfinity(value))
             {
                 return (value < 0 ? "-" : "") + stdInfinity;
             }

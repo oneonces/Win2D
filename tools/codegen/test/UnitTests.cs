@@ -2,12 +2,9 @@
 //
 // Licensed under the MIT License. See LICENSE.txt in the project root for license information.
 
-using System;
-using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text;
-using System.Xml.Serialization;
 using System.Collections.Generic;
+using System.IO;
 
 namespace CodeGen.Test
 {
@@ -84,7 +81,7 @@ namespace CodeGen.Test
             FileInfo[] actualGeneratedFiles = actualDirectoryInfo.GetFiles();
 
             // Ensure the correct number of files was generated.
-            const int expectedEffectCount = 53;
+            const int expectedEffectCount = 55;
             Assert.AreEqual(expectedEffectCount * 3 + 2, expectedGeneratedFiles.Length);
             Assert.AreEqual(expectedGeneratedFiles.Length, actualGeneratedFiles.Length);
 

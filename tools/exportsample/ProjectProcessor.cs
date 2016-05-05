@@ -38,24 +38,26 @@ namespace exportsample
         public string SourceDirectory { get; private set; }
         public string DestinationDirectory { get; private set; }
         string relativePackagesDirectory;
+        bool isSingletonProject;
 
         Configuration config;
         SampleDirectory sample;
         XDocument doc;
 
-        public static ProjectProcessor Export(string projectFileName, Configuration config, SampleDirectory sample, string destination)
+        public static ProjectProcessor Export(string projectFileName, bool isSingletonProject, Configuration config, SampleDirectory sample, string destination)
         {
-            var project = new ProjectProcessor(projectFileName, config, sample);
+            var project = new ProjectProcessor(projectFileName, isSingletonProject, config, sample);
             project.Process();
             project.Save(destination);
             return project;
         }
 
-        ProjectProcessor(string projectFileName, Configuration config, SampleDirectory sample)
+        ProjectProcessor(string projectFileName, bool isSingletonProject, Configuration config, SampleDirectory sample)
         {
             this.fileName = projectFileName;
             this.SourceDirectory = Path.GetDirectoryName(fileName);
             this.DestinationDirectory = config.GetDestination(SourceDirectory);
+            this.isSingletonProject = isSingletonProject;
             this.config = config;
             this.sample = sample;
 
@@ -122,6 +124,7 @@ namespace exportsample
         string Expand(string path)
         {
             path = path.Replace("$(MSBuildThisFileDirectory)", SourceDirectory + "\\");
+            path = path.Replace("$(ProjectDir)", DestinationDirectory + "\\");
 
             foreach (var property in config.Properties)
             {
@@ -139,6 +142,7 @@ namespace exportsample
             ProcessFileReferences();
             RelocateNuGetReferences();
             ConvertWin2DProjectReferences();
+            FlattenConditions();
         }
 
         #region Inline Imports
@@ -277,11 +281,18 @@ namespace exportsample
             }
 
             // Otherwise we'll need to copy it somewhere to reference it, and update our element to point to the new location                
-            foreach (var entry in config.DuplicateDirectories)
+            foreach (var entry in config.DuplicateFiles)
             {
                 if (fullPath.StartsWith(entry.Key))
                 {
-                    var dest = fullPath.Replace(entry.Key, Path.Combine(sample.Destination, entry.Value));
+                    var value = entry.Value;
+
+                    // If there is only one variant of this project (eg. CompositionExample, which only targets UAP)
+                    // then redirect files that would normally go in the Shared folder to the main project directory.
+                    if (isSingletonProject)
+                        value = value.Replace("Shared", "$(ProjectDir)");
+
+                    var dest = Path.GetFullPath(fullPath.Replace(entry.Key, Path.Combine(sample.Destination, Expand(value))));
                     FilesToCopy[fullPath] = dest;
 
                     return GetRelativePath(dest, DestinationDirectory);
@@ -526,6 +537,77 @@ namespace exportsample
             element.SetAttributeValue("Condition", string.Format("!Exists('{0}')", filename));
             element.SetAttributeValue("Text", string.Format("$([System.String]::Format('$(ErrorText)', '{0}'))", filename));
             return element;
+        }
+
+        #endregion
+
+        #region Remove MSBuild 'Condition' attributes that will always pass or fail
+
+        void FlattenConditions()
+        {
+            const string propertyRegex = @"'\$\(([\w\s]+)\)'";                                  // matches: '$(property)'
+            const string operatorRegex = @"([=!]=)";                                            // matches: == or !=
+            const string valueRegex = @"'([\w\s\.]*)'";                                         // matches: 'value'
+            const string clauseRegex = propertyRegex + " " + operatorRegex + " " + valueRegex;  // matches: '$(property)' == 'value'
+            const string conditionRegex = "^(?:" + clauseRegex + "(?: And |$))+";               // matches: one or more clauses, separated by And
+
+            // Note this is a very simplistic parser. It won't match (and therefore won't flatten)
+            // expressions with different spacing, missing quotes, use of Or or ! operators, etc.
+
+            var regex = new Regex(conditionRegex);
+
+            var elementsWithConditions = doc.Descendants().Where(e => e.Attribute("Condition") != null);
+
+            foreach (var element in elementsWithConditions.ToList())
+            {
+                var match = regex.Match(element.Attribute("Condition").Value);
+
+                if (match.Success)
+                {
+                    var clauses = from i in Enumerable.Range(0, match.Groups[1].Captures.Count)
+                                  select new
+                                  {
+                                      Property = match.Groups[1].Captures[i].Value,
+                                      Operator = match.Groups[2].Captures[i].Value,
+                                      Value    = match.Groups[3].Captures[i].Value,
+                                  };
+
+                    // Only flatten expressions whose properties are specified in the config.
+                    if (!clauses.All(clause => config.PropertiesToFlatten.Contains(clause.Property)))
+                        continue;
+
+                    // Evaluate the expression.
+                    bool result = clauses.All(clause => EvaluateConditionClause(clause.Property, clause.Operator, clause.Value));
+
+                    if (result)
+                    {
+                        // If the expression is true, remove the Condition attribute, so the element is now unconditionally included.
+                        element.SetAttributeValue("Condition", null);
+                    }
+                    else
+                    {
+                        // Otherwise remove the element itself.
+                        element.Remove();
+                    }
+                }
+            }
+        }
+
+        bool EvaluateConditionClause(string property, string comparisonOperator, string value)
+        {
+            var propertyValue = doc.Descendants(NS + property).Single().Value;
+
+            switch (comparisonOperator)
+            {
+                case "==":
+                    return (propertyValue == value);
+
+                case "!=":
+                    return (propertyValue != value);
+
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
         #endregion

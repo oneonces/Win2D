@@ -16,6 +16,7 @@
 
 #include "mocks/MockDWriteTextRenderer.h"
 #include "mocks/MockDWriteTypography.h"
+#include "mocks/MockDWriteTextAnalyzer.h"
 
 #include "utils/TextHelpers.h"
 
@@ -61,10 +62,10 @@ namespace canvas
                         auto bitmapBrush = Make<MockD2DBitmapBrush>();
                         bitmapBrush->MockGetBitmap = [&](ID2D1Bitmap** bitmap){  *bitmap = nullptr; };
                         bitmapBrush->MockSetBitmap = [&](ID2D1Bitmap* bitmap){};
-                        bitmapBrush->MockGetExtendModeX = [&]() { return D2D1_EXTEND_MODE_MIRROR; };
-                        bitmapBrush->MockGetExtendModeY = [&]() { return D2D1_EXTEND_MODE_WRAP; };
-                        bitmapBrush->MockGetInterpolationMode1 = [&]() { return D2D1_INTERPOLATION_MODE_ANISOTROPIC; };
-                        bitmapBrush->MockGetOpacity = [&]() { return 0.1f; };
+                        bitmapBrush->MockGetExtendModeX = [&] { return D2D1_EXTEND_MODE_MIRROR; };
+                        bitmapBrush->MockGetExtendModeY = [&] { return D2D1_EXTEND_MODE_WRAP; };
+                        bitmapBrush->MockGetInterpolationMode1 = [&] { return D2D1_INTERPOLATION_MODE_ANISOTROPIC; };
+                        bitmapBrush->MockGetOpacity = [&] { return 0.1f; };
                         bitmapBrush->MockGetTransform = [&](D2D1_MATRIX_3X2_F* transform) { *transform = D2D1_MATRIX_3X2_F{}; };
                         bitmapBrush->MockSetExtendModeX = [&](D2D1_EXTEND_MODE extend) {};
                         bitmapBrush->MockSetExtendModeY = [&](D2D1_EXTEND_MODE extend) {};
@@ -81,10 +82,10 @@ namespace canvas
                         auto currentImage = std::make_shared<ComPtr<ID2D1Image>>(initialImage);
                         imageBrush->MockGetImage = [currentImage](ID2D1Image** image) { currentImage->CopyTo(image); };
                         imageBrush->MockSetImage = [currentImage](ID2D1Image* image) { *currentImage = image; };
-                        imageBrush->MockGetExtendModeX = [&]() { return D2D1_EXTEND_MODE_MIRROR; };
-                        imageBrush->MockGetExtendModeY = [&]() { return D2D1_EXTEND_MODE_WRAP; };
-                        imageBrush->MockGetInterpolationMode = [&]() { return D2D1_INTERPOLATION_MODE_ANISOTROPIC; };
-                        imageBrush->MockGetOpacity = [&]() { return 0.1f; };
+                        imageBrush->MockGetExtendModeX = [&] { return D2D1_EXTEND_MODE_MIRROR; };
+                        imageBrush->MockGetExtendModeY = [&] { return D2D1_EXTEND_MODE_WRAP; };
+                        imageBrush->MockGetInterpolationMode = [&] { return D2D1_INTERPOLATION_MODE_ANISOTROPIC; };
+                        imageBrush->MockGetOpacity = [&] { return 0.1f; };
                         imageBrush->MockGetTransform = [&](D2D1_MATRIX_3X2_F* transform) { *transform = D2D1_MATRIX_3X2_F{}; };
                         imageBrush->MockGetSourceRectangle = [&](D2D1_RECT_F* rect) { *rect = D2D1::RectF(0, 0, 10, 10); };
                         imageBrush->MockSetExtendModeX = [&](D2D1_EXTEND_MODE extend) {};
@@ -532,10 +533,10 @@ namespace canvas
             auto textLayout = f.CreateSimpleTextLayout();               \
                                                                         \
             f.Adapter->MockTextLayout->##mockName##.SetExpectedCalls(1, \
-                [&]()                                                   \
-            {                                                           \
-                return dwriteValue;                                     \
-            });                                                         \
+                [&]                                                     \
+                {                                                       \
+                    return dwriteValue;                                 \
+                });                                                     \
                                                                         \
             decltype(canvasValue) value;                                \
             Assert::AreEqual(S_OK, textLayout->get_##name##(&value));   \
@@ -967,8 +968,8 @@ namespace canvas
 
             auto textLayout = f.CreateSimpleTextLayout();
             
-            f.Adapter->MockTextLayout->GetMaxWidthMethod.SetExpectedCalls(1, [&]() { return 123.0f; });
-            f.Adapter->MockTextLayout->GetMaxHeightMethod.SetExpectedCalls(1, [&]() { return 456.0f; });
+            f.Adapter->MockTextLayout->GetMaxWidthMethod.SetExpectedCalls(1, [&] { return 123.0f; });
+            f.Adapter->MockTextLayout->GetMaxHeightMethod.SetExpectedCalls(1, [&] { return 456.0f; });
 
             Size size;
             Assert::AreEqual(S_OK, textLayout->get_RequestedSize(&size));
@@ -996,10 +997,10 @@ namespace canvas
 
             f.Adapter->MockTextLayout->DetermineMinWidthMethod.SetExpectedCalls(1,
                 [&](FLOAT* out)
-            {
-                *out = 123.0f;
-                return S_OK;
-            });
+                {
+                    *out = 123.0f;
+                    return S_OK;
+                });
 
             float value;
             Assert::AreEqual(S_OK, textLayout->GetMinimumLineLength(&value));
@@ -1332,10 +1333,10 @@ namespace canvas
             Fixture f;
 
             f.Adapter->MockTextLayout->GetMaxWidthMethod.SetExpectedCalls(1,
-                [&](){ return 10.0f;  });
+                [&] { return 10.0f;  });
 
             f.Adapter->MockTextLayout->GetMaxHeightMethod.SetExpectedCalls(1,
-                [&](){ return 20.0f;  });
+                [&] { return 20.0f;  });
 
             f.Adapter->MockTextLayout->GetOverhangMetricsMethod.SetExpectedCalls(1,
                 [&](DWRITE_OVERHANG_METRICS* out)
@@ -1369,14 +1370,14 @@ namespace canvas
 
                 f.Adapter->MockTextLayout->HitTestPointMethod.SetExpectedCalls(1,
                     [&](FLOAT x, FLOAT y, BOOL* isTrailingHit, BOOL* isInside, DWRITE_HIT_TEST_METRICS* hitTestMetrics)
-                {
-                    Assert::AreEqual(1.0f, x);
-                    Assert::AreEqual(2.0f, y);
-                    *isTrailingHit = FALSE;
-                    *isInside = TRUE;
-                    *hitTestMetrics = DWRITE_HIT_TEST_METRICS{};
-                    return S_OK;
-                });
+                    {
+                        Assert::AreEqual(1.0f, x);
+                        Assert::AreEqual(2.0f, y);
+                        *isTrailingHit = FALSE;
+                        *isInside = TRUE;
+                        *hitTestMetrics = DWRITE_HIT_TEST_METRICS{};
+                        return S_OK;
+                    });
 
                 auto textLayout = f.CreateSimpleTextLayout();
 
@@ -1492,7 +1493,7 @@ namespace canvas
                         Assert::IsTrue(!!isTrailingHit);
                         *pointX = 2.0f;
                         *pointY = 3.0f;
-                        if(i==1)
+                        if (i==1)
                             WriteHitTestDescription(hitTestMetrics);
                         return S_OK;
                     });
@@ -2832,6 +2833,54 @@ namespace canvas
             Assert::AreEqual(S_OK, textLayout->GetTypography(123u, &typography));
 
             Assert::IsTrue(IsSameInstance(expectedTypography.Get(), typography.Get()));
+        }
+
+        TEST_METHOD_EX(CanvasTextLayoutTests_GetGlyphOrientationTransform_InvalidArg)
+        {
+            auto factory = Make<CanvasTextLayoutFactory>();
+
+            Assert::AreEqual(
+                E_INVALIDARG, 
+                factory->GetGlyphOrientationTransform(CanvasGlyphOrientation::Upright, true, Vector2{ 0, 0 }, nullptr));
+        }
+
+        TEST_METHOD_EX(CanvasTextLayoutTests_GetGlyphOrientationTransform_PassesThrough)
+        {
+            auto factory = Make<CanvasTextLayoutFactory>();
+
+            ComPtr<MockDWriteTextAnalyzer> dwriteTextAnalyzer = Make<MockDWriteTextAnalyzer>();
+
+            auto adapter = std::make_shared<StubCanvasTextLayoutAdapter>();
+            CustomFontManagerAdapter::SetInstance(adapter);
+
+            adapter->GetMockDWriteFactory()->CreateTextAnalyzerMethod.AllowAnyCall(
+                [&](IDWriteTextAnalyzer** out)
+                {
+                    ThrowIfFailed(dwriteTextAnalyzer.CopyTo(out));
+                    return S_OK;
+                });
+
+            dwriteTextAnalyzer->GetGlyphOrientationTransformMethod.SetExpectedCalls(1,
+                [&](DWRITE_GLYPH_ORIENTATION_ANGLE orientationAngle,
+                    BOOL isSideways,
+                    float x,
+                    float y,
+                    DWRITE_MATRIX* out)
+                {
+                    Assert::AreEqual(DWRITE_GLYPH_ORIENTATION_ANGLE_90_DEGREES, orientationAngle);
+                    Assert::IsTrue(!!isSideways);
+                    Assert::AreEqual(12.0f, x);
+                    Assert::AreEqual(34.0f, y);
+                    *out = DWRITE_MATRIX{ 1, 2, 3, 4, 5, 6 };
+
+                    return S_OK;
+                });
+
+            Matrix3x2 transform;
+            Assert::AreEqual(
+                S_OK,
+                factory->GetGlyphOrientationTransform(CanvasGlyphOrientation::Clockwise90Degrees, true, Vector2{ 12, 34 }, &transform));
+            Assert::AreEqual(Matrix3x2{ 1, 2, 3, 4, 5, 6 }, transform);
         }
     };
 }

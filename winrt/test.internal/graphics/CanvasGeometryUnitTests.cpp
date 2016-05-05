@@ -136,7 +136,7 @@ public:
             : currentVertex(0)
         {
             Device->CreatePathGeometryMethod.SetExpectedCalls(1,
-                [=]()
+                [=]
                 {
                     auto pathGeometry = Make<MockD2DPathGeometry>();
 
@@ -373,7 +373,7 @@ public:
                 });
             
             Device->CreatePathGeometryMethod.AllowAnyCall(
-                []()
+                []
                 {
                     auto pathGeometry = Make<MockD2DPathGeometry>();
 
@@ -407,7 +407,7 @@ public:
             SinkForTemporaryPath->CloseMethod.AllowAnyCall();
 
             Device->CreatePathGeometryMethod.SetExpectedCalls(1,
-                [this]()
+                [this]
                 {
                     TemporaryPathGeometry->OpenMethod.SetExpectedCalls(1,
                         [this](ID2D1GeometrySink** out)
@@ -457,14 +457,14 @@ public:
 
         f.D2DRectangleGeometry->CombineWithGeometryMethod.SetExpectedCalls(1,
             [&](ID2D1Geometry* geometry, D2D1_COMBINE_MODE combineMode, CONST D2D1_MATRIX_3X2_F* transform, FLOAT tol, ID2D1SimplifiedGeometrySink* sink)
-        {
-            Assert::AreEqual(static_cast<ID2D1Geometry*>(f.D2DEllipseGeometry.Get()), geometry);
-            Assert::AreEqual(D2D1_COMBINE_MODE_INTERSECT, combineMode);
-            Assert::AreEqual(sc_someD2DTransform, *transform);
-            Assert::AreEqual(2.0f, tol);
-            Assert::AreEqual<ID2D1SimplifiedGeometrySink*>(f.SinkForTemporaryPath.Get(), sink);
-            return S_OK;
-        });
+            {
+                Assert::AreEqual(static_cast<ID2D1Geometry*>(f.D2DEllipseGeometry.Get()), geometry);
+                Assert::AreEqual(D2D1_COMBINE_MODE_INTERSECT, combineMode);
+                Assert::AreEqual(sc_someD2DTransform, *transform);
+                Assert::AreEqual(2.0f, tol);
+                Assert::AreEqual<ID2D1SimplifiedGeometrySink*>(f.SinkForTemporaryPath.Get(), sink);
+                return S_OK;
+            });
 
         ComPtr<ICanvasGeometry> g;
         Assert::AreEqual(S_OK, f.RectangleGeometry->CombineWithUsingFlatteningTolerance(f.EllipseGeometry.Get(), sc_someTransform, CanvasGeometryCombine::Intersect, 2.0f, &g));

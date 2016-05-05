@@ -494,13 +494,13 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
         CHECK_ENUM_MEMBER(DWRITE_GRID_FIT_MODE_DISABLED, CanvasTextGridFit::Disable);
         CHECK_ENUM_MEMBER(DWRITE_GRID_FIT_MODE_ENABLED, CanvasTextGridFit::Enable);
         return static_cast<DWRITE_GRID_FIT_MODE>(value);
-	}
+    }
 
-	inline CanvasTextMeasuringMode ToCanvasTextMeasuringMode(DWRITE_MEASURING_MODE value)
-	{
-		// static_asserts in ToDWriteMeasuringMode validate that this cast is ok
-		return static_cast<CanvasTextMeasuringMode>(value);
-	}
+    inline CanvasTextMeasuringMode ToCanvasTextMeasuringMode(DWRITE_MEASURING_MODE value)
+    {
+        // static_asserts in ToDWriteMeasuringMode validate that this cast is ok
+        return static_cast<CanvasTextMeasuringMode>(value);
+    }
 
     inline DWRITE_MEASURING_MODE ToDWriteMeasuringMode(CanvasTextMeasuringMode value)
     {
@@ -601,19 +601,19 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
     }
 #endif
 
-	inline DWRITE_GLYPH_ORIENTATION_ANGLE ToDWriteGlyphOrientationAngle(CanvasGlyphOrientation value)
-	{
-		CHECK_ENUM_MEMBER(DWRITE_GLYPH_ORIENTATION_ANGLE_0_DEGREES, CanvasGlyphOrientation::Upright);
-		CHECK_ENUM_MEMBER(DWRITE_GLYPH_ORIENTATION_ANGLE_90_DEGREES, CanvasGlyphOrientation::Clockwise90Degrees);
-		CHECK_ENUM_MEMBER(DWRITE_GLYPH_ORIENTATION_ANGLE_180_DEGREES, CanvasGlyphOrientation::Clockwise180Degrees);
-		CHECK_ENUM_MEMBER(DWRITE_GLYPH_ORIENTATION_ANGLE_270_DEGREES, CanvasGlyphOrientation::Clockwise270Degrees);
-		return static_cast<DWRITE_GLYPH_ORIENTATION_ANGLE>(value);
-	}
+    inline DWRITE_GLYPH_ORIENTATION_ANGLE ToDWriteGlyphOrientationAngle(CanvasGlyphOrientation value)
+    {
+        CHECK_ENUM_MEMBER(DWRITE_GLYPH_ORIENTATION_ANGLE_0_DEGREES, CanvasGlyphOrientation::Upright);
+        CHECK_ENUM_MEMBER(DWRITE_GLYPH_ORIENTATION_ANGLE_90_DEGREES, CanvasGlyphOrientation::Clockwise90Degrees);
+        CHECK_ENUM_MEMBER(DWRITE_GLYPH_ORIENTATION_ANGLE_180_DEGREES, CanvasGlyphOrientation::Clockwise180Degrees);
+        CHECK_ENUM_MEMBER(DWRITE_GLYPH_ORIENTATION_ANGLE_270_DEGREES, CanvasGlyphOrientation::Clockwise270Degrees);
+        return static_cast<DWRITE_GLYPH_ORIENTATION_ANGLE>(value);
+    }
 
-	inline CanvasGlyphOrientation ToCanvasGlyphOrientation(DWRITE_GLYPH_ORIENTATION_ANGLE value)
-	{
-		// static_asserts in ToDWriteGlyphOrientationAngle validate that this cast is ok
-		return static_cast<CanvasGlyphOrientation>(value);
+    inline CanvasGlyphOrientation ToCanvasGlyphOrientation(DWRITE_GLYPH_ORIENTATION_ANGLE value)
+    {
+        // static_asserts in ToDWriteGlyphOrientationAngle validate that this cast is ok
+        return static_cast<CanvasGlyphOrientation>(value);
     }
 
     inline DWRITE_BREAK_CONDITION ToDWriteBreakCondition(CanvasLineBreakCondition value)
@@ -629,6 +629,26 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
     {
         // static_asserts in ToDWriteGlyphOrientationAngle validate that this cast is ok
         return static_cast<CanvasLineBreakCondition>(value);
+    }
+
+    inline CanvasLineBreakCondition ToCanvasLineBreakCondition(uint8_t value)
+    {
+        //
+        // DWrite returns DWRITE_BREAK_CONDITION for this value, and uses a uint8_t for compactness.
+        // We assert that this value is valid.
+        //
+        switch (value)
+        {
+            case DWRITE_BREAK_CONDITION_NEUTRAL:
+            case DWRITE_BREAK_CONDITION_CAN_BREAK:
+            case DWRITE_BREAK_CONDITION_MAY_NOT_BREAK:
+            case DWRITE_BREAK_CONDITION_MUST_BREAK:
+                break;
+            default:
+                assert(false); // Unexpected value
+        }
+
+        return ToCanvasLineBreakCondition(static_cast<DWRITE_BREAK_CONDITION>(value));
     }
 
     //
@@ -807,5 +827,29 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
 
         return static_cast<CanvasGlyphJustification>(value);
     }
+
+    inline DWRITE_SCRIPT_ANALYSIS ToDWriteScriptAnalysis(CanvasAnalyzedScript const& analyzedScript)
+    {
+        DWRITE_SCRIPT_ANALYSIS scriptAnalysis{};
+
+        if (analyzedScript.ScriptIdentifier < 0 || analyzedScript.ScriptIdentifier > UINT16_MAX)
+        {
+            ThrowHR(E_INVALIDARG);
+        }
+        scriptAnalysis.script = static_cast<uint16_t>(analyzedScript.ScriptIdentifier);
+        scriptAnalysis.shapes = ToDWriteScriptShapes(analyzedScript.Shape);
+
+        return scriptAnalysis;
+    }
+
+    struct DWriteGlyphData
+    {
+        std::vector<uint16_t> Indices;
+        std::vector<DWRITE_GLYPH_OFFSET> Offsets;
+        std::vector<float> Advances;
+    };
+    enum class DWriteGlyphField { Indices = 0x1, Offsets = 0x2, Advances = 0x4 };
+
+    DWriteGlyphData GetDWriteGlyphData(uint32_t glyphCount, CanvasGlyph* sourceGlyphsElements, int whichFields);
    
 }}}}}

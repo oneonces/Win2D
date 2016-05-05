@@ -7,31 +7,42 @@
 namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas
 {
     using namespace ABI::Windows::Foundation;
+
+    DeviceContextLease GetDeviceContextForGetBounds(ICanvasDevice* device, ICanvasResourceCreator* resourceCreator)
+    {
+        if (auto drawingSession = MaybeAs<ICanvasDrawingSession>(resourceCreator))
+        {
+            // A CanvasDrawingSession is already wrapping a device context that
+            // may have interesting state set on it (ie unit mode and dpi) so we
+            // return that.
+            ComPtr<ID2D1DeviceContext1> deviceContext;
+            ThrowIfFailed(As<ICanvasResourceWrapperNative>(drawingSession)->GetNativeResource(nullptr, 0, IID_PPV_ARGS(&deviceContext)));
+            return DeviceContextLease(std::move(deviceContext));
+        }
+
+        return As<ICanvasDeviceInternal>(device)->GetResourceCreationDeviceContext();
+    }
     
     static Rect GetImageBoundsImpl(
         ICanvasImageInternal* imageInternal,
-        ICanvasDrawingSession *drawingSession,
+        ICanvasResourceCreator* resourceCreator,
         Numerics::Matrix3x2 const* transform)
     {
-        ComPtr<ICanvasDevice> canvasDevice;
-        ThrowIfFailed(As<ICanvasResourceCreator>(drawingSession)->get_Device(&canvasDevice));
+        ComPtr<ICanvasDevice> device;
+        ThrowIfFailed(resourceCreator->get_Device(&device));
 
-        auto drawingSessionResourceWrapper = As<ICanvasResourceWrapperNative>(drawingSession);
+        auto d2dDeviceContext = GetDeviceContextForGetBounds(device.Get(), resourceCreator);
 
-        ComPtr<ID2D1DeviceContext1> d2dDeviceContext;
-        ThrowIfFailed(drawingSessionResourceWrapper->GetNativeResource(nullptr, 0, IID_PPV_ARGS(&d2dDeviceContext)));
+        auto d2dImage = imageInternal->GetD2DImage(device.Get(), d2dDeviceContext.Get());
 
-        auto d2dImage = imageInternal->GetD2DImage(canvasDevice.Get(), d2dDeviceContext.Get());
-
-        D2D1_RECT_F d2dBounds;
-        
         D2D1_MATRIX_3X2_F previousTransform;
         d2dDeviceContext->GetTransform(&previousTransform);
 
         auto restoreTransformWarden = MakeScopeWarden([&] { d2dDeviceContext->SetTransform(previousTransform); });
 
         d2dDeviceContext->SetTransform(ReinterpretAs<D2D1_MATRIX_3X2_F const*>(transform));
-
+        
+        D2D1_RECT_F d2dBounds;
         ThrowIfFailed(d2dDeviceContext->GetImageWorldBounds(d2dImage.Get(), &d2dBounds));
 
         return FromD2DRect(d2dBounds);
@@ -39,22 +50,20 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas
 
     HRESULT GetImageBoundsImpl(
         ICanvasImageInternal* imageInternal,
-        ICanvasDrawingSession* drawingSession,
+        ICanvasResourceCreator* resourceCreator,
         Numerics::Matrix3x2 const* transform,
         Rect* bounds)
     {
-        static Numerics::Matrix3x2 identity = { 1, 0, 0, 1, 0, 0 };
-
         if (!transform)
-            transform = &identity;
+            transform = &Identity3x2();
 
         return ExceptionBoundary(
             [&]
             {
-                CheckInPointer(drawingSession);
+                CheckInPointer(resourceCreator);
                 CheckInPointer(bounds);
 
-                *bounds = GetImageBoundsImpl(imageInternal, drawingSession, transform);
+                *bounds = GetImageBoundsImpl(imageInternal, resourceCreator, transform);
             });
     }
 
@@ -187,6 +196,116 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas
                             quality);
                     });
                 ThrowIfFailed(newAction.CopyTo(action));
+            });
+    }
+
+
+    IFACEMETHODIMP CanvasImageFactory::ComputeHistogram(
+        ICanvasImage* image,
+        Rect sourceRectangle,
+        ICanvasResourceCreator* resourceCreator,
+        Effects::EffectChannelSelect channelSelect,
+        int32_t numberOfBins,
+        uint32_t* valueCount,
+        float** valueElements)
+    {
+        return ExceptionBoundary(
+            [&]
+            {
+                CheckInPointer(image);
+                CheckInPointer(resourceCreator);
+                CheckInPointer(valueCount);
+                CheckAndClearOutPointer(valueElements);
+
+                if (numberOfBins < 2 || numberOfBins > 1024)
+                    ThrowHR(E_INVALIDARG);
+
+                // Look up a device context.
+                ComPtr<ICanvasDevice> device;
+                ThrowIfFailed(resourceCreator->get_Device(&device));
+                
+                auto deviceInternal = As<ICanvasDeviceInternal>(device);
+
+                auto deviceContext = deviceInternal->GetResourceCreationDeviceContext();
+                
+                // Look up a histogram effect.
+                ComPtr<ID2D1Effect> histogram = deviceInternal->LeaseHistogramEffect(deviceContext.Get());
+
+                auto releaseHistogram = MakeScopeWarden(
+                    [&]
+                    {
+                        histogram->SetInput(0, nullptr);
+                        deviceInternal->ReleaseHistogramEffect(std::move(histogram));
+                    });
+
+                // Configure the histogram effect.
+                float realizedDpi;
+
+                auto d2dImage = As<ICanvasImageInternal>(image)->GetD2DImage(device.Get(), deviceContext.Get(), GetImageFlags::None, DEFAULT_DPI, &realizedDpi);
+
+                if (realizedDpi != 0 && realizedDpi != DEFAULT_DPI)
+                {
+                    ThrowIfFailed(D2D1::SetDpiCompensatedEffectInput(deviceContext.Get(), histogram.Get(), 0, As<ID2D1Bitmap>(d2dImage).Get()));
+                }
+                else
+                {
+                    histogram->SetInput(0, d2dImage.Get());
+                }
+
+                histogram->SetValue(D2D1_HISTOGRAM_PROP_CHANNEL_SELECT, channelSelect);
+                histogram->SetValue(D2D1_HISTOGRAM_PROP_NUM_BINS, numberOfBins);
+
+                // Evaluate the histogram by drawing the effect.
+                deviceContext->BeginDraw();
+
+                deviceContext->DrawImage(As<ID2D1Image>(histogram).Get(), D2D1_POINT_2F{ 0, 0 }, ToD2DRect(sourceRectangle));
+
+                ThrowIfFailed(deviceContext->EndDraw());
+
+                // Read back the results.
+                ComArray<float> array(numberOfBins);
+
+                ThrowIfFailed(histogram->GetValue(D2D1_HISTOGRAM_PROP_HISTOGRAM_OUTPUT,
+                                                  reinterpret_cast<BYTE*>(array.GetData()),
+                                                  array.GetSize() * sizeof(float)));
+
+                array.Detach(valueCount, valueElements);
+            });
+    }
+
+
+    IFACEMETHODIMP CanvasImageFactory::IsHistogramSupported(
+        ICanvasDevice* device,
+        boolean* result)
+    {
+        return ExceptionBoundary(
+            [&]
+            {
+                CheckInPointer(device);
+                CheckInPointer(result);
+
+                ComPtr<ID3D11Device> d3dDevice;
+                ThrowIfFailed(As<IDirect3DDxgiInterfaceAccess>(device)->GetInterface(IID_PPV_ARGS(&d3dDevice)));
+
+                bool isSupported = false;
+
+                if (d3dDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_0)
+                {
+                    // Feature level 11 and above always supports compute shaders.
+                    isSupported = true;
+                }
+                else
+                {
+                    // On feature level 10, compute shaders are optional.
+                    D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS features = { 0 };
+                    
+                    if (SUCCEEDED(d3dDevice->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &features, sizeof(features))))
+                    {
+                        isSupported = !!features.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x;
+                    }
+                }
+
+                *result = isSupported;
             });
     }
 

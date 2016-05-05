@@ -13,15 +13,18 @@ namespace Microsoft.Graphics.Canvas
     interface ICanvasImage : IInspectable
         requires IGRAPHICSEFFECTSOURCE, Windows.Foundation.IClosable
     {
-        // The returned bounds reflect the DPI and UnitMode of the drawing session.
+        // If resourceCreator is a CanvasDrawingSession then the returned bounds
+        // reflect the UnitMode and DPI of the drawing session.
+        //
+        // Otherwise, the bounds are returns in DIPS.
         [overload("GetBounds")]
         HRESULT GetBounds(
-            [in] CanvasDrawingSession* drawingSession,
+            [in] Microsoft.Graphics.Canvas.ICanvasResourceCreator* resourceCreator,
             [out, retval] Windows.Foundation.Rect* bounds);
 
         [overload("GetBounds")]
         HRESULT GetBoundsWithTransform(
-            [in] CanvasDrawingSession* drawingSession,
+            [in] Microsoft.Graphics.Canvas.ICanvasResourceCreator* resourceCreator,
             [in] NUMERICS.Matrix3x2 transform,
             [out, retval] Windows.Foundation.Rect* bounds);
     }
@@ -98,10 +101,22 @@ namespace Microsoft.Graphics.Canvas
             [in]          float quality,
             [in]          CanvasBufferPrecision bufferPrecision,
             [out, retval] Windows.Foundation.IAsyncAction** action);
+
+        HRESULT ComputeHistogram(
+            [in] ICanvasImage* image,
+            [in] Windows.Foundation.Rect sourceRectangle,
+            [in] ICanvasResourceCreator* resourceCreator,
+            [in] Microsoft.Graphics.Canvas.Effects.EffectChannelSelect channelSelect,
+            [in] INT32 numberOfBins,
+            [out] UINT32* valueCount,
+            [out, size_is(, *valueCount), retval] float** valueElements);
+
+        HRESULT IsHistogramSupported(
+            [in] CanvasDevice* device,
+            [out, retval] boolean* result);
     }
 
-    [version(VERSION), threading(both), marshaling_behavior(agile),
-     static(ICanvasImageStatics, VERSION)]
+    [STANDARD_ATTRIBUTES, static(ICanvasImageStatics, VERSION)]
     runtimeclass CanvasImage
     {
     };

@@ -21,19 +21,19 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
     typedef IDWriteFont2 DWritePhysicalFontPropertyContainer;
     typedef DWRITE_RENDERING_MODE DWriteRenderingMode;
 #endif
-	
-	[uuid(0A165926-BCBD-4B02-BF60-F5FC46C22B58)]
+    
+    [uuid(0A165926-BCBD-4B02-BF60-F5FC46C22B58)]
     class ICanvasFontFaceInternal : public IUnknown
     {
     public:
-		virtual ComPtr<DWriteFontFaceType> const& GetRealizedFontFace() = 0;
+        virtual ComPtr<DWriteFontFaceType> const& GetRealizedFontFace() = 0;
     };
 
     class CanvasFontFace : RESOURCE_WRAPPER_RUNTIME_CLASS(
         DWriteFontReferenceType,
         CanvasFontFace,
-		ICanvasFontFace,
-		CloakedIid<ICanvasFontFaceInternal>)
+        ICanvasFontFace,
+        CloakedIid<ICanvasFontFaceInternal>)
     {
         InspectableClass(RuntimeClass_Microsoft_Graphics_Canvas_Text_CanvasFontFace, BaseTrust);
 
@@ -153,7 +153,7 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
             CanvasFontInformation fontInformation,
             IMapView<HSTRING, HSTRING>** values) override;
 
-        IFACEMETHOD(HasCharacter)(UINT32 unicodeValue, boolean* value) override;
+        IFACEMETHOD(HasCharacter)(uint32_t unicodeValue, boolean* value) override;
         
         IFACEMETHOD(GetGlyphRunBounds)(
             ICanvasDrawingSession* drawingSession,
@@ -178,16 +178,44 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
 
         IFACEMETHOD(get_Panose)(uint32_t* valueCount, uint8_t** values) override;
 
+        IFACEMETHOD(GetSupportedTypographicFeatureNames)(
+            CanvasAnalyzedScript script,
+            uint32_t* valueCount,
+            CanvasTypographyFeatureName** valueElements) override;
+
+        IFACEMETHOD(GetSupportedTypographicFeatureNamesWithLocale)(
+            CanvasAnalyzedScript script,
+            HSTRING locale,
+            uint32_t* valueCount,
+            CanvasTypographyFeatureName** valueElements) override;
+
+        IFACEMETHOD(GetTypographicFeatureGlyphSupport)(
+            CanvasAnalyzedScript script,
+            CanvasTypographyFeatureName typographicFeatureName,
+            uint32_t glyphsCount,
+            CanvasGlyph* glyphsElements,
+            uint32_t* valueCount,
+            boolean** valueElements) override;
+
+        IFACEMETHOD(GetTypographicFeatureGlyphSupportWithLocale)(
+            CanvasAnalyzedScript script,
+            CanvasTypographyFeatureName typographicFeatureName,
+            uint32_t glyphsCount,
+            CanvasGlyph* glyphsElements,
+            HSTRING locale,
+            uint32_t* valueCount,
+            boolean** valueElements) override;
+
         //
         // IClosable
         //
 
-		IFACEMETHOD(Close)() override;
+        IFACEMETHOD(Close)() override;
 
-		//
-		// Internal
-		//
-		virtual ComPtr<DWriteFontFaceType> const& GetRealizedFontFace() override;
+        //
+        // Internal
+        //
+        virtual ComPtr<DWriteFontFaceType> const& GetRealizedFontFace() override;
 
     private:
         float DesignSpaceToEmSpace(int designSpaceUnits, unsigned short designUnitsPerEm);

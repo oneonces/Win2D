@@ -15,6 +15,7 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
     using namespace ABI::Windows::ApplicationModel;
     using namespace ABI::Windows::UI::Core;
     using namespace ABI::Windows::UI::Xaml::Controls;
+    using namespace ABI::Windows::UI::Xaml::Shapes;
     using namespace ABI::Windows::UI::Xaml;
     using namespace ABI::Windows::Foundation;
     using namespace ABI::Windows::System::Threading;
@@ -105,6 +106,8 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
 
         virtual ComPtr<CanvasSwapChainPanel> CreateCanvasSwapChainPanel() = 0;
 
+        virtual ComPtr<IShape> CreateDesignModeShape() = 0;
+
         virtual std::unique_ptr<CanvasGameLoop> CreateAndStartGameLoop(
             CanvasAnimatedControl* control,
             ISwapChainPanel* swapChainPanel) = 0;
@@ -127,6 +130,7 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
         EventSource<ITypedEventHandler<ICanvasAnimatedControl*, IInspectable*>, InvokeModeOptions<StopOnFirstError>> m_gameLoopStoppedEventList;
 
         ComPtr<ICanvasSwapChainPanel> m_canvasSwapChainPanel;
+        ComPtr<IShape> m_designModeShape; // in design mode we use a shape rather than a swap chain panel
 
         std::unique_ptr<CanvasGameLoop> m_gameLoop;
         ComPtr<IAsyncAction> m_renderLoopAction;
@@ -152,6 +156,8 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
                 , NeedsDraw(true)
                 , Invalidated(false)
                 , DeviceNeedsReCreationWithNewOptions(false)
+                , SizeSeenByGameLoop{}
+                , IsInTick(false)
             {}
 
             bool IsPaused;
@@ -163,6 +169,8 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
             bool NeedsDraw;
             bool Invalidated;
             bool DeviceNeedsReCreationWithNewOptions;
+            Size SizeSeenByGameLoop;
+            bool IsInTick;
             std::vector<ComPtr<AnimatedControlAsyncAction>> PendingAsyncActions;
         };
 
@@ -176,8 +184,11 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
         virtual ~CanvasAnimatedControl();
 
         //
-        // ICanvasControl
+        // ICanvasAnimatedControl
         //
+
+        IFACEMETHODIMP get_ClearColor(Color* value) override;
+        IFACEMETHODIMP put_ClearColor(Color value) override;
 
         IFACEMETHODIMP add_Update(
             Animated_UpdateEventHandler* value,
@@ -212,6 +223,8 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
 
         IFACEMETHODIMP get_Paused(boolean* value) override;
         
+        IFACEMETHODIMP get_Size(Size* value) override;
+
         IFACEMETHODIMP Invalidate() override;
         
         IFACEMETHODIMP ResetElapsedTime() override;
@@ -251,7 +264,7 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas { na
         virtual void WindowVisibilityChanged() override final;
 
     private:
-        void CreateSwapChainPanel();
+        void CreateContentControl();
 
         // ICanvasGameLoopClient methods
 

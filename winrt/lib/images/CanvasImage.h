@@ -6,6 +6,8 @@
 
 #include "WicAdapter.h"
 
+class DeviceContextLease;
+
 namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas
 {
     using namespace ::Microsoft::WRL;
@@ -62,10 +64,11 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas
 
     HRESULT GetImageBoundsImpl(
         ICanvasImageInternal* imageInternal,
-        ICanvasDrawingSession* drawingSession,
+        ICanvasResourceCreator* resourceCreator,
         Numerics::Matrix3x2 const* optionalTransform,
         Rect* bounds);
 
+    DeviceContextLease GetDeviceContextForGetBounds(ICanvasDevice* device, ICanvasResourceCreator* resourceCreator);
 
     class DefaultCanvasImageAdapter;
     
@@ -150,5 +153,18 @@ namespace ABI { namespace Microsoft { namespace Graphics { namespace Canvas
             float quality,
             CanvasBufferPrecision bufferPrecision,
             IAsyncAction** action) override;
+
+        IFACEMETHODIMP ComputeHistogram(
+            ICanvasImage* image,
+            Rect sourceRectangle,
+            ICanvasResourceCreator* resourceCreator,
+            Effects::EffectChannelSelect channelSelect,
+            int32_t numberOfBins,
+            uint32_t* valueCount,
+            float** valueElements) override;
+
+        IFACEMETHODIMP IsHistogramSupported(
+            ICanvasDevice* device,
+            boolean* result) override;
     };
 }}}}

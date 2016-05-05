@@ -122,6 +122,32 @@ IFACEMETHODIMP CanvasTextLayoutFactory::Create(
 }
 
 
+IFACEMETHODIMP CanvasTextLayoutFactory::GetGlyphOrientationTransform(
+    CanvasGlyphOrientation glyphOrientation,
+    boolean isSideways,
+    Vector2 position,
+    Matrix3x2* transform)
+{
+    return ExceptionBoundary(
+        [&]
+        {
+            CheckInPointer(transform);
+
+            auto analyzer = CustomFontManager::GetInstance()->GetTextAnalyzer();
+
+            DWRITE_MATRIX dwriteTransform;
+            ThrowIfFailed(analyzer->GetGlyphOrientationTransform(
+                ToDWriteGlyphOrientationAngle(glyphOrientation),
+                isSideways,
+                position.X,
+                position.Y,
+                &dwriteTransform));
+
+            *transform = *(ReinterpretAs<Matrix3x2*>(&dwriteTransform));
+        });
+}
+
+
 CanvasTextLayout::CanvasTextLayout(
     ICanvasDevice* device,
     DWriteTextLayoutType* layout)
@@ -384,14 +410,14 @@ IFACEMETHODIMP CanvasTextLayout::get_LineSpacingMode(
 {
     return ExceptionBoundary(
         [&]
-    {
-        CheckInPointer(value);
-        auto& resource = GetResource();
+        {
+            CheckInPointer(value);
+            auto& resource = GetResource();
 
-        DWriteLineSpacing spacing(resource.Get());
-        bool allowUniform = m_lineSpacingMode == CanvasLineSpacingMode::Uniform;
-        *value = spacing.GetAdjustedLineSpacingMode(allowUniform);
-    });
+            DWriteLineSpacing spacing(resource.Get());
+            bool allowUniform = m_lineSpacingMode == CanvasLineSpacingMode::Uniform;
+            *value = spacing.GetAdjustedLineSpacingMode(allowUniform);
+        });
 }
 
 IFACEMETHODIMP CanvasTextLayout::put_LineSpacingMode(
@@ -399,21 +425,21 @@ IFACEMETHODIMP CanvasTextLayout::put_LineSpacingMode(
 {
     return ExceptionBoundary(
         [&]
-    {
-        auto& resource = GetResource();
+        {
+            auto& resource = GetResource();
 
-        DWriteLineSpacing originalSpacing(resource.Get());
+            DWriteLineSpacing originalSpacing(resource.Get());
 
-        DWriteLineSpacing::Set(
-            resource.Get(),
-            value,
-            originalSpacing.GetAdjustedSpacing(),
-            originalSpacing.Baseline);
+            DWriteLineSpacing::Set(
+                resource.Get(),
+                value,
+                originalSpacing.GetAdjustedSpacing(),
+                originalSpacing.Baseline);
 
-        m_lineSpacingMode = value;
+            m_lineSpacingMode = value;
 
-        m_trimmingSignInformation.RecreateInternalTrimmingSignIfNeeded(resource.Get());
-    });
+            m_trimmingSignInformation.RecreateInternalTrimmingSignIfNeeded(resource.Get());
+        });
 }
 
 #endif
@@ -777,19 +803,19 @@ IFACEMETHODIMP CanvasTextLayout::SetColor(
 {
     return ExceptionBoundary(
         [&]
-    {
-        auto& resource = GetResource();
+        {
+            auto& resource = GetResource();
 
-        auto textRange = ToDWriteTextRange(characterIndex, characterCount);
+            auto textRange = ToDWriteTextRange(characterIndex, characterCount);
 
-        auto& device = m_device.EnsureNotClosed();
+            auto& device = m_device.EnsureNotClosed();
 
-        auto deviceInternal = As<ICanvasDeviceInternal>(device);
+            auto deviceInternal = As<ICanvasDeviceInternal>(device);
 
-        auto d2dBrush = deviceInternal->CreateSolidColorBrush(ToD2DColor(color));
+            auto d2dBrush = deviceInternal->CreateSolidColorBrush(ToD2DColor(color));
 
-        ThrowIfFailed(resource->SetDrawingEffect(d2dBrush.Get(), textRange));
-    });
+            ThrowIfFailed(resource->SetDrawingEffect(d2dBrush.Get(), textRange));
+        });
 }
 
 IFACEMETHODIMP CanvasTextLayout::SetBrush(
@@ -1131,13 +1157,13 @@ IFACEMETHODIMP CanvasTextLayout::get_TrimmingSign(
 {
     return ExceptionBoundary(
         [&]
-    {
-        CheckInPointer(value);
+        {
+            CheckInPointer(value);
 
-        auto& resource = GetResource();
+            auto& resource = GetResource();
 
-        *value = m_trimmingSignInformation.GetTrimmingSignFromResource(resource.Get());
-    });
+            *value = m_trimmingSignInformation.GetTrimmingSignFromResource(resource.Get());
+        });
 }
 
 IFACEMETHODIMP CanvasTextLayout::put_TrimmingSign(
@@ -1637,13 +1663,13 @@ IFACEMETHODIMP CanvasTextLayout::get_ClusterMetrics(
                     metrics.CharacterCount = dwriteMetrics.length;
                     metrics.Width = dwriteMetrics.width;
 
-                    if(dwriteMetrics.canWrapLineAfter)
+                    if (dwriteMetrics.canWrapLineAfter)
                         metrics.Properties |= CanvasClusterProperties::CanWrapLineAfter;
 
                     if (dwriteMetrics.isWhitespace)
                         metrics.Properties |= CanvasClusterProperties::Whitespace;
 
-                    if(dwriteMetrics.isNewline) 
+                    if (dwriteMetrics.isNewline) 
                         metrics.Properties |= CanvasClusterProperties::Newline;
 
                     if (dwriteMetrics.isSoftHyphen)
@@ -1767,7 +1793,7 @@ IFACEMETHODIMP CanvasTextLayout::GetTypography(
 
             ComPtr<ICanvasTypography> canvasTypography;
 
-            if(dwriteTypography)
+            if (dwriteTypography)
                 canvasTypography = ResourceManager::GetOrCreate<ICanvasTypography>(dwriteTypography.Get());
 
             ThrowIfFailed(canvasTypography.CopyTo(typography));
@@ -1789,7 +1815,7 @@ IFACEMETHODIMP CanvasTextLayout::SetTypography(
 
             ComPtr<IDWriteTypography> dwriteTypography;
 
-            if(typography)
+            if (typography)
                 dwriteTypography = GetWrappedResource<IDWriteTypography>(typography);
 
             ThrowIfFailed(resource->SetTypography(dwriteTypography.Get(), ToDWriteTextRange(characterIndex, characterCount)));

@@ -31,9 +31,8 @@ namespace ExampleGallery
         {
             DashStyle = CanvasDashStyle.Dash
         };
-        
-        struct WordBoundary { public int Start; public int Length; }
-        List<WordBoundary> everyOtherWordBoundary = new List<WordBoundary>();
+
+        List<Utils.WordBoundary> everyOtherWordBoundary;
 
         public bool ShowNonOutlineText { get; set; }
 
@@ -75,7 +74,7 @@ namespace ExampleGallery
             CurrentTextLengthOption = TextLengthOption.Paragraph;
             CurrentTextOutlineGranularityOption = TextOutlineGranularity.GlyphRun;
 
-            if(ThumbnailGenerator.IsDrawingThumbnail)
+            if (ThumbnailGenerator.IsDrawingThumbnail)
             {
                 CurrentTextDirection = CanvasTextDirection.LeftToRightThenTopToBottom;
                 CurrentTextLengthOption = TextLengthOption.Short;
@@ -250,25 +249,12 @@ namespace ExampleGallery
                 testString = "This is some text which demonstrates Win2D's text-to-geometry option; there are sub-options of this test which apply lining options such as underline or strike-through. Additionally, this example applies different text directions to ensure glyphs are transformed correctly.";
             }
 
-            if(ThumbnailGenerator.IsDrawingThumbnail)
+            if (ThumbnailGenerator.IsDrawingThumbnail)
             {
                 testString = "a";
             }
 
-            for (int i = 0; i < testString.Length; ++i)
-            {
-                if (testString[i] == ' ')
-                {
-                    int nextSpace = testString.IndexOf(' ', i + 1);
-                    int limit = nextSpace == -1 ? testString.Length : nextSpace;
-
-                    WordBoundary wb = new WordBoundary();
-                    wb.Start = i + 1;
-                    wb.Length = limit - i - 1;
-                    everyOtherWordBoundary.Add(wb);
-                    i = limit;
-                }
-            }
+            everyOtherWordBoundary = Utils.GetEveryOtherWord(testString);
 
             float sizeDim = Math.Min(canvasWidth, canvasHeight);         
 
@@ -285,16 +271,16 @@ namespace ExampleGallery
 
             CanvasTextLayout textLayout = new CanvasTextLayout(resourceCreator, testString, textFormat, canvasWidth, canvasHeight);
 
-            if(CurrentTextEffectOption == TextEffectOption.UnderlineEveryOtherWord)
+            if (CurrentTextEffectOption == TextEffectOption.UnderlineEveryOtherWord)
             {
-                foreach(WordBoundary wb in everyOtherWordBoundary)
+                foreach (var wb in everyOtherWordBoundary)
                 {
                     textLayout.SetUnderline(wb.Start, wb.Length, true);
                 }
             }
             else if (CurrentTextEffectOption == TextEffectOption.StrikeEveryOtherWord)
             {
-                foreach (WordBoundary wb in everyOtherWordBoundary)
+                foreach (var wb in everyOtherWordBoundary)
                 {
                     textLayout.SetStrikethrough(wb.Start, wb.Length, true);
                 }

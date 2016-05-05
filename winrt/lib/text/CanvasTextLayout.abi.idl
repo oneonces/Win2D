@@ -4,9 +4,9 @@
 
 namespace Microsoft.Graphics.Canvas.Text
 {
-	runtimeclass CanvasTextLayout;
+    runtimeclass CanvasTextLayout;
 
-	interface ICanvasTextRenderer;
+    interface ICanvasTextRenderer;
     
     [version(VERSION)]
     typedef struct CanvasTextLayoutRegion
@@ -27,6 +27,7 @@ namespace Microsoft.Graphics.Canvas.Text
     [version(VERSION), flags]
     typedef enum CanvasClusterProperties
     {
+        None = 0x0,
         CanWrapLineAfter = 0x1,
         Whitespace = 0x2,
         Newline = 0x4,
@@ -56,6 +57,15 @@ namespace Microsoft.Graphics.Canvas.Text
         float LeadingWhitespaceAfter;
 #endif
     } CanvasLineMetrics;
+
+    [version(VERSION)]
+    typedef enum CanvasGlyphOrientation
+    {
+        Upright,
+        Clockwise90Degrees,
+        Clockwise180Degrees,
+        Clockwise270Degrees
+    } CanvasGlyphOrientation;
 
 #define PROPERTY(NAME, TYPE)                            \
     [propget] HRESULT NAME([out, retval] TYPE* value);  \
@@ -227,9 +237,9 @@ namespace Microsoft.Graphics.Canvas.Text
             [in] ICanvasTextInlineObject* inlineObject);
 
         [overload("DrawToTextRenderer")]
-		HRESULT DrawToTextRenderer(
-			[in] ICanvasTextRenderer* textRenderer,
-			[in] NUMERICS.Vector2 position);
+        HRESULT DrawToTextRenderer(
+            [in] ICanvasTextRenderer* textRenderer,
+            [in] NUMERICS.Vector2 position);
 
         [overload("DrawToTextRenderer")]
         HRESULT DrawToTextRendererWithCoords(
@@ -403,7 +413,34 @@ namespace Microsoft.Graphics.Canvas.Text
             [out, retval] CanvasTextLayout** canvasTextLayout);
     };
 
-    [version(VERSION), activatable(ICanvasTextLayoutFactory, VERSION)]
+    [version(VERSION), uuid(7F2B8FFD-6935-4F60-B409-6394A19C5EBC), exclusiveto(CanvasTextLayout)]
+    interface ICanvasTextLayoutStatics : IInspectable
+    {
+        //
+        // Custom text renderers can use this method to determine glyph
+        // rotation. Glyph rotation is based off of the text orientation,
+        // and whether vertical glyphs are stacked or rotated.
+        //
+        // CanvasDrawingSession.DrawGlyphRun doesn't auto-rotate glyphs.
+        // Rotation may not be appropriate for all custom renderers,
+        // and apps that don't want auto-rotation would need to do work 
+        // to strip it out. 
+        //
+        // Moreover, this method exists for apps which
+        // want to draw a glyph run using something other than the Direct2D
+        // renderer (CanvasDrawingSession).
+        //
+        // Apps shouldn't use this method when constructing geometry from text. 
+        // Win2D bakes that transform into the geometry.
+        //
+        HRESULT GetGlyphOrientationTransform(
+            [in] CanvasGlyphOrientation glyphOrientation,
+            [in] boolean isSideways,
+            [in] NUMERICS.Vector2 position,
+            [out, retval] NUMERICS.Matrix3x2* transform);
+    }
+
+    [STANDARD_ATTRIBUTES, activatable(ICanvasTextLayoutFactory, VERSION), static(ICanvasTextLayoutStatics, VERSION)]
     runtimeclass CanvasTextLayout
     {
         [default] interface ICanvasTextLayout;

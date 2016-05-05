@@ -10,7 +10,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <name>Microsoft.Graphics.Canvas</name>
   </assembly>
   <members>    
-    <member name="T:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMeshPatchEdge" Experimental="true" Win10="true">
+    <member name="T:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMeshPatchEdge" Win10="true">
       <summary>Specifies the type of edge a gradient mesh patch will have, when drawn.</summary>
     </member>
     <member name="F:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMeshPatchEdge.Aliased">
@@ -24,7 +24,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       Useful when the edge is known to be an interior one; inflating the edge helps to mitigate seaming artifacts.
     </summary>
     </member>
-    <member name="T:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMeshPatch" Experimental="true" Win10="true">
+    <member name="T:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMeshPatch" Win10="true">
       <summary>Describes a patch which can comprise a gradient mesh.</summary>
       <remarks>
         <p>
@@ -115,7 +115,7 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
       <summary>The type of edge from Point30 to Point00.</summary>
     </member>
     
-    <member name="T:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMesh" Experimental="true" Win10="true">
+    <member name="T:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMesh" Win10="true">
       <summary>A drawable set of bezier patches, consisting of interpolated colors.</summary>
       <remarks>
         <p>
@@ -147,11 +147,25 @@ Licensed under the MIT License. See LICENSE.txt in the project root for license 
     <member name="P:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMesh.Patches">
       <summary>Gets the array of patches that comprise this gradient mesh.</summary>
     </member>
-    <member name="M:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMesh.GetBounds(Microsoft.Graphics.Canvas.CanvasDrawingSession)">
+    <member name="M:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMesh.GetBounds(Microsoft.Graphics.Canvas.ICanvasResourceCreator)">
       <summary>Gets the bounds of this CanvasGradientMesh.</summary>
       <remarks>
-        The bounds are the extent of this gradient mesh as if it were drawn relative to the origin, on the given drawing session. 
-        GetBounds takes into account the drawing session's transform, DPI and unit mode.</remarks>
+        <p>
+          The bounds are the extent of this gradient mesh as if it were drawn
+          relative to the origin with the drawing session's Transform set to the
+          identity.
+        </p>
+      </remarks>
+    </member>
+    <member name="M:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMesh.GetBounds(Microsoft.Graphics.Canvas.ICanvasResourceCreator,System.Numerics.Matrix3x2)">
+      <summary>Gets the bounds of this CanvasGradientMesh.</summary>
+      <remarks>
+        <p>
+          The bounds are the extent of this gradient mesh as if it were drawn
+          relative to the origin with the drawing session's Transform set to the
+          specified transform.
+        </p>
+      </remarks>
     </member>
     <member name="P:Microsoft.Graphics.Canvas.Geometry.CanvasGradientMesh.Device">
       <summary>Gets the device associated with this CanvasGradientMesh.</summary>

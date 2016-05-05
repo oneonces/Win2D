@@ -72,7 +72,9 @@
 #include <windows.storage.h>
 #include <windows.ui.h>
 #include <windows.ui.xaml.controls.h>
+#include <windows.ui.xaml.media.h>
 #include <windows.ui.xaml.media.dxinterop.h>
+#include <windows.ui.xaml.shapes.h>
 #include <windows.graphics.display.h>
 
 #if WINVER > _WIN32_WINNT_WINBLUE
@@ -107,6 +109,11 @@
 
 // Generated from local IDLs
 #include <Microsoft.Graphics.Canvas.h>
+
+#pragma warning(push)
+#pragma warning(disable:4459)   // declaration hides global declaration
+#include <win2d.etw.h>
+#pragma warning(pop)
 
 // Pick up the inbox or local WinRT DirectX types as appropriate
 #include "UapApis.h"

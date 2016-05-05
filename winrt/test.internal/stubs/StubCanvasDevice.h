@@ -22,8 +22,9 @@ namespace canvas
         DeviceContextPool m_deviceContextPool;
         
     public:
-        StubCanvasDevice(ComPtr<ID2D1Device1> device = Make<StubD2DDevice>())
+        StubCanvasDevice(ComPtr<ID2D1Device1> device = Make<StubD2DDevice>(), ComPtr<MockD3D11Device> d3dDevice = nullptr)
             : m_d2DDevice(device)
+            , m_d3dDevice(d3dDevice)
             , m_deviceLostEventSource(Make<MockEventSource<DeviceLostHandlerType>>(L"DeviceLost"))
             , m_deviceContextPool(m_d2DDevice.Get())
         {
@@ -82,7 +83,7 @@ namespace canvas
                 });
 
             RaiseDeviceLostMethod.AllowAnyCall(
-                [=]()
+                [=]
                 {
                     return m_deviceLostEventSource->InvokeAll(this, nullptr);
                 });
